@@ -6,11 +6,10 @@ from pymongo import MongoClient, InsertOne
 from pymongo.errors import BulkWriteError
 from datetime import date
 
-MONGO_HOST = "192.168.101.98"
+MONGO_HOST = "127.0.0.1"
 MONGO_PORT = 27017
 
-mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
-mongoM_masterCOLL = mongo_masterDB.samples
+
 
 log_name = filename = str(date.today().strftime('%b-%d-%Y')) + '.log'
 
@@ -23,13 +22,21 @@ logging.basicConfig(filename=log_name,
 logger = logging.getLogger(log_name)
 
 
-def insert_registers():
+def insert_registers(args):
+    if len(args) == 4:
+        mongo_masterDB = MongoClient(args[2], int(args[3]))
+    else:
+        mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
+
+    mongoM_masterCOLL = mongo_masterDB.samples
+
     patients = []
     drugs = []
     doctors = []
     tractaments = []
+
     try:
-        with open('Test.txt') as csvfile:
+        with open(args[1]) as csvfile:
             for line in csvfile:
                 spplited_line = line.split(";")
 
@@ -38,13 +45,14 @@ def insert_registers():
                 doctors.append(add_doctors(spplited_line))
                 tractaments.append(add_tractament(spplited_line))
 
-        insert_patients(patients)
-        insert_drugs(drugs)
-        insert_doctors(doctors)
-        insert_tractaments(tractaments)
+        insert_patients(patients, mongoM_masterCOLL)
+        insert_drugs(drugs, mongoM_masterCOLL)
+        insert_doctors(doctors, mongoM_masterCOLL)
+        insert_tractaments(tractaments, mongoM_masterCOLL)
 
     except Exception as e:
         logger.error(e)
+        print(e)
         sys.exit()
 
 
@@ -68,36 +76,36 @@ def add_tractament(line):
                       })
 
 
-def insert_tractaments(tractaments):
+def insert_tractaments(tractaments, mongo):
     try:
-        mongoM_masterCOLL.tractaments.bulk_write(tractaments, ordered=False)
+        mongo.tractaments.bulk_write(tractaments, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
 
 
-def insert_patients(patients):
+def insert_patients(patients, mongo):
     try:
-        mongoM_masterCOLL.pacients.create_index('Identificador', unique=True)
-        mongoM_masterCOLL.pacients.bulk_write(patients, ordered=False)
+        mongo.pacients.create_index('Identificador', unique=True)
+        mongo.pacients.bulk_write(patients, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
 
 
-def insert_drugs(drugs):
+def insert_drugs(drugs, mongo):
     try:
-        mongoM_masterCOLL.medicament.create_index('Codi_Medicament', unique=True)
-        mongoM_masterCOLL.medicament.bulk_write(drugs, ordered=False)
+        mongo.medicament.create_index('Codi_Medicament', unique=True)
+        mongo.medicament.bulk_write(drugs, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
 
 
-def insert_doctors(doctors):
+def insert_doctors(doctors, mongo):
     try:
-        mongoM_masterCOLL.metges.create_index('NumColegiat', unique=True)
-        mongoM_masterCOLL.metges.bulk_write(doctors, ordered=False)
+        mongo.metges.create_index('NumColegiat', unique=True)
+        mongo.metges.bulk_write(doctors, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -129,4 +137,8 @@ def add_patient(line):
 
 
 if __name__ == '__main__':
-    insert_registers()
+    if len(sys.argv) >= 2:
+        insert_registers(sys.argv)
+        insert_registers(sys.argv)
+    else:
+        print("WRONG SINTAX - it must match: python3 import_mongo {CSVFILE} [MONGO_IP MONGO_PORT]")
