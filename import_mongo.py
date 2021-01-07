@@ -34,9 +34,8 @@ def insert_registers(args):
     drugs = []
     doctors = []
     tractaments = []
-
     try:
-        with open(args[1]) as csvfile:
+        with open(args[1], encoding="utf-8") as csvfile:
             for line in csvfile:
                 spplited_line = line.split(";")
 
