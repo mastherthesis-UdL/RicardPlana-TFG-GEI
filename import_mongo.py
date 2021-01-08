@@ -51,7 +51,6 @@ def insert_registers(args):
 
     except Exception as e:
         logger.error(e)
-        print(e)
         sys.exit()
 
 
