@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+
+  pharmacology-service:
+      build:
+        context: ./pharmacology-service/
+        dockerfile: Dockerfile
+      container_name: pharmacology-service
+      restart: unless-stopped
+      env_file: .env
+      environment:
+        - MONGO_USERNAME=$MONGO_USERNAME
+        - MONGO_PASSWORD=$MONGO_PASSWORD
+        - MONGO_HOSTNAME=db
+        - MONGO_PORT=$MONGO_PORT
+        - MONGO_DB=$MONGO_DB
+      ports:
+        - "3000:3000"
+        - "9229:9229"
+      volumes:
+        - ./pharmacology-service:/home/node/app
+        - node_modules:/home/node/app/node_modules
+      command: npm start
+volumes:
+  node_modules:
