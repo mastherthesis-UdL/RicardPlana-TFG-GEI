@@ -40,7 +40,6 @@ def insert_registers(args):
                 spplited_line = line.split(";")
 
                 if count == NUMBER_INSERTS:
-                    print("ONEJUMP")
                     count = 0
                     insert_patients(patients, mongoM_masterCOLL)
                     insert_drugs(drugs, mongoM_masterCOLL)
