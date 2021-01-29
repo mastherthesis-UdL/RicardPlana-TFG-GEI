@@ -1,5 +1,4 @@
 import sys
-import logging
 import logging.handlers
 
 from pymongo import MongoClient, InsertOne
@@ -8,8 +7,7 @@ from datetime import date
 
 MONGO_HOST = "127.0.0.1"
 MONGO_PORT = 27017
-
-
+NUMBER_INSERTS = 50000
 
 log_name = filename = str(date.today().strftime('%b-%d-%Y')) + '.log'
 
@@ -28,21 +26,38 @@ def insert_registers(args):
     else:
         mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
 
-    mongoM_masterCOLL = mongo_masterDB.samples
+    mongoM_masterCOLL = mongo_masterDB.samplesTEST
 
     patients = []
     drugs = []
     doctors = []
     tractaments = []
+    count = 0
+
     try:
-        with open(args[1], encoding="utf-8") as csvfile:
+        with open(args[1]) as csvfile:
             for line in csvfile:
                 spplited_line = line.split(";")
+
+                if count == NUMBER_INSERTS:
+                    print("ONEJUMP")
+                    count = 0
+                    insert_patients(patients, mongoM_masterCOLL)
+                    insert_drugs(drugs, mongoM_masterCOLL)
+                    insert_doctors(doctors, mongoM_masterCOLL)
+                    insert_tractaments(tractaments, mongoM_masterCOLL)
+
+                    patients = []
+                    drugs = []
+                    doctors = []
+                    tractaments = []
 
                 patients.append(add_patient(spplited_line))
                 drugs.append(add_drugs(spplited_line))
                 doctors.append(add_doctors(spplited_line))
                 tractaments.append(add_tractament(spplited_line))
+
+                count += 1
 
         insert_patients(patients, mongoM_masterCOLL)
         insert_drugs(drugs, mongoM_masterCOLL)
@@ -111,8 +126,8 @@ def insert_doctors(doctors, mongo):
 
 def add_doctors(line):
     return InsertOne({'NumColegiat': line[9],
-                      ##'Nom': line[18],
-                      ##'Codi_ABS': line[19]
+                      # 'Nom': line[18],
+                      # 'Codi_ABS': line[19]
                       })
 
 
@@ -136,7 +151,6 @@ def add_patient(line):
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:
-        insert_registers(sys.argv)
         insert_registers(sys.argv)
     else:
         print("WRONG SINTAX - it must match: python3 import_mongo {CSVFILE} [MONGO_IP MONGO_PORT]")
