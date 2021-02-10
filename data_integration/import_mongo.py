@@ -21,7 +21,7 @@ logger = logging.getLogger(log_name)
 
 
 def insert_registers(args):
-    year = int(args[1].split("_")[1].split(".")[0])
+    year = int(args[1].split("/")[-1].split("_")[1].split(".")[0])
     filename = args[1]
 
     if len(args) == 4:
@@ -29,7 +29,7 @@ def insert_registers(args):
     else:
         mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
 
-    mongoM_masterCOLL = mongo_masterDB.samplesTEST
+    mongoM_masterCOLL = mongo_masterDB.samples
 
     patients = []
     drugs = []
