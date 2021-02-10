@@ -21,6 +21,9 @@ logger = logging.getLogger(log_name)
 
 
 def insert_registers(args):
+    year = int(args[1].split("_")[1].split(".")[0])
+    filename = args[1]
+
     if len(args) == 4:
         mongo_masterDB = MongoClient(args[2], int(args[3]))
     else:
@@ -51,10 +54,10 @@ def insert_registers(args):
                     doctors = []
                     tractaments = []
 
-                patients.append(add_patient(spplited_line))
-                drugs.append(add_drugs(spplited_line))
+                patients.append(add_patient(spplited_line, year))
+                drugs.append(add_drugs(spplited_line, year))
                 doctors.append(add_doctors(spplited_line))
-                tractaments.append(add_tractament(spplited_line))
+                tractaments.append(add_tractament(spplited_line, year))
 
                 count += 1
 
@@ -62,34 +65,46 @@ def insert_registers(args):
         insert_drugs(drugs, mongoM_masterCOLL)
         insert_doctors(doctors, mongoM_masterCOLL)
         insert_tractaments(tractaments, mongoM_masterCOLL)
+        insert_filename(filename, mongoM_masterCOLL,year)
+        
 
     except Exception as e:
         logger.error(e)
         sys.exit()
 
+def insert_filename(filename, mongo, year):
+    try:
+        mongo.fitxers.insert_one({'Fixer': filename,
+                                  'Any' : year})
 
-def add_tractament(line):
-    return InsertOne({'Rec': line[13],
-                      'ENV': line[14],
-                      'Aportacion_cliente': line[16],
-                      'LIQ': line[17],
-                      'Pacient': {'Identificador': line[1],
+    except BulkWriteError as bwe:
+        logger.info(bwe.details)
+
+def add_tractament(line, year):
+    return InsertOne({'Rec': int(line[13].split(",")[0]),
+                      'ENV': int(line[14].split(",")[0]),
+                      'Aportacion_cliente': float(line[16].replace(",",".")),
+                      'LIQ': float(line[17].replace(",",".")),
+                      'Pacient': {'Identificador': int(line[1]),
                                   'Actiu/Pensionista': line[2][1:-1],
                                   'Titular/Beneficiari': line[3][1:-1],
-                                  'Edat': line[4],
-                                  'AnysEdat': line[5][1:-1],
-                                  'Sexe': line[6][1:-1], },
-                      'Medicament': {'Codi_Medicament': line[10],
+                                  'Edat': int(line[4]),
+                                  'AnysEdat': int(float(line[5].replace(",","."))),
+                                  'Sexe': int(line[6][1:-1]) },
+                      'Medicament': {'Codi_Medicament': int(line[10]),
                                      'Nom_Medicament': line[11][1:-1],
-                                     'PVP': line[14],
+                                     'PVP': float(line[14].replace(",",".")),
                                      'GT': line[12][1:-1]
                                      },
-                      'Metge': {'NumColegiat': line[9]}
+                      'Metge': {'NumColegiat': int(line[9])},
+                      'Any': year
                       })
 
 
 def insert_tractaments(tractaments, mongo):
     try:
+        mongo.tractaments.create_index('Medicament.Codi_Medicament', unique=True)
+        mongo.tractaments.create_index('Pacient.Identificador', unique=True)
         mongo.tractaments.bulk_write(tractaments, ordered=False)
 
     except BulkWriteError as bwe:
@@ -108,6 +123,7 @@ def insert_patients(patients, mongo):
 def insert_drugs(drugs, mongo):
     try:
         mongo.medicament.create_index('Codi_Medicament', unique=True)
+        mongo.medicament.create_index('GT', unique=True)
         mongo.medicament.bulk_write(drugs, ordered=False)
 
     except BulkWriteError as bwe:
@@ -124,31 +140,34 @@ def insert_doctors(doctors, mongo):
 
 
 def add_doctors(line):
-    return InsertOne({'NumColegiat': line[9],
+    return InsertOne({'NumColegiat': int(line[9]),
                       # 'Nom': line[18],
                       # 'Codi_ABS': line[19]
                       })
 
 
-def add_drugs(line):
-    return InsertOne({'Codi_Medicament': line[10],
+def add_drugs(line, year):
+    return InsertOne({'Codi_Medicament': int(line[10]),
                       'Nom_Medicament': line[11][1:-1],
-                      'PVP': line[14],
-                      'GT': line[12][1:-1]
+                      'PVP': float(line[14].replace(",",".")),
+                      'GT': line[12][1:-1],
+                      'Any': year
                       })
 
 
-def add_patient(line):
-    return InsertOne({'Identificador': line[1],
+def add_patient(line, year):
+    return InsertOne({'Identificador': int(line[1]),
                       'Actiu/Pensionista': line[2][1:-1],
                       'Titular/Beneficiari': line[3][1:-1],
-                      'Edat': line[4],
-                      'AnysEdat': line[5][1:-1],
-                      'Sexe': line[6][1:-1],
+                      'Edat': int(line[4]),
+                      'AnysEdat': int(float(line[5].replace(",","."))),
+                      'Sexe': int(line[6][1:-1]),
+                      'Any': year
                       })
 
 
 if __name__ == '__main__':
+    
     if len(sys.argv) >= 2:
         insert_registers(sys.argv)
     else:
