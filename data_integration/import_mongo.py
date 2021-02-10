@@ -21,7 +21,8 @@ logger = logging.getLogger(log_name)
 
 
 def insert_registers(args):
-    year = int(args[1].split("/")[-1].split("_")[1].split(".")[0])
+    year = args[1].split("/")[-1].split("_")[1].split(".")[0]
+    year = int(year)
     filename = args[1]
 
     if len(args) == 4:
