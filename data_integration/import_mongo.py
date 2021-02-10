@@ -103,8 +103,8 @@ def add_tractament(line, year):
 
 def insert_tractaments(tractaments, mongo):
     try:
-        mongo.tractaments.create_index('Medicament.Codi_Medicament', unique=True)
-        mongo.tractaments.create_index('Pacient.Identificador', unique=True)
+        mongo.tractaments.create_index('Medicament.Codi_Medicament', unique=False)
+        mongo.tractaments.create_index('Pacient.Identificador', unique=False)
         mongo.tractaments.bulk_write(tractaments, ordered=False)
 
     except BulkWriteError as bwe:
