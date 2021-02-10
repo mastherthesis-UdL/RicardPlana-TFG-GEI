@@ -38,7 +38,7 @@ def insert_registers(args):
     count = 0
 
     try:
-        with open(args[1], encoding="utf-8")) as csvfile:
+        with open(args[1], encoding="utf-8") as csvfile:
             for line in csvfile:
                 spplited_line = line.split(";")
 
