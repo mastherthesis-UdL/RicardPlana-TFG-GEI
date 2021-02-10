@@ -9,7 +9,7 @@ MONGO_HOST = "127.0.0.1"
 MONGO_PORT = 27017
 NUMBER_INSERTS = 50000
 
-log_name = filename = str(date.today().strftime('%b-%d-%Y')) + '.log'
+log_name = str(date.today().strftime('%b-%d-%Y')) + '.log'
 
 logging.basicConfig(filename=log_name,
                     filemode='a',
