@@ -21,7 +21,7 @@ logger = logging.getLogger(log_name)
 
 
 def insert_registers(args):
-    year = args[1].split("/")[-1].split("_")[1].split(".")[0]
+    year = int(args[1].split("/")[-1].split("_")[1].split(".")[0])
     filename = args[1]
 
     if len(args) == 4:
@@ -40,6 +40,7 @@ def insert_registers(args):
     try:
         with open(args[1], encoding="utf-8") as csvfile:
             for line in csvfile:
+                auxLine = line
                 spplited_line = line.split(";")
 
                 if count == NUMBER_INSERTS:
@@ -67,7 +68,6 @@ def insert_registers(args):
         insert_tractaments(tractaments, mongoM_masterCOLL)
         insert_filename(filename, mongoM_masterCOLL,year)
         
-
     except Exception as e:
         logger.error(e)
         sys.exit()
@@ -96,7 +96,7 @@ def add_tractament(line, year):
                                      'PVP': float(line[14].replace(",",".")),
                                      'GT': line[12][1:-1]
                                      },
-                      'Metge': {'NumColegiat': int(line[9])},
+                      'Metge': {'NumColegiat': line[9]},
                       'Any': year
                       })
 
@@ -140,7 +140,7 @@ def insert_doctors(doctors, mongo):
 
 
 def add_doctors(line):
-    return InsertOne({'NumColegiat': int(line[9]),
+    return InsertOne({'NumColegiat': line[9],
                       # 'Nom': line[18],
                       # 'Codi_ABS': line[19]
                       })
