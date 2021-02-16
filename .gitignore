@@ -131,6 +131,6 @@ dmypy.json
 # VScode
 .vscode
 
-# Ignore test files
-*.csv
+# Ignore test file
 *Test*
+*.log

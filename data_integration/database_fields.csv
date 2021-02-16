@@ -1,0 +1,22 @@
+Pacient;Taula de pacients
+Medicament;Taula de medicaments
+Metge;Taula de metges
+Tractament;Taula de tractaments
+Rec;Número de receptes
+ENV;Número d’envasos receptats en una recepta. Dit d’una altra manera, el número de caixes entregades en aquella recepta
+Aportacion_cliente;Quantitat monetària que aporta el pacient pel medicament
+LIQ;Import que paga el CatSalut del medicament 
+Identificador;Codi d’identificació del pacient
+Actiu/Pensionista;Actiu o pensionista
+Titular/Beneficiari;Titular o beneficiari
+Edat;Franja d’edats
+AnysEdat;Representa l’edat del pacient
+Sexe;Sexe del pacient 
+Codi_Medicament;Representa el codi medicament receptat
+Nom_Medicament;Nom del medicament
+PVP;Preu de venta al públic 
+GT;Grup terapèutic del medicament
+NumColegiat;Representa el número de col·legiat del metge que ha receptat el medicament
+Any;Any de insercio del registre
+Fitxer;Ruta del fitxer carregat
+Data_carrega;Data de la carrega del fitxer

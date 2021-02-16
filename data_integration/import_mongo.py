@@ -5,9 +5,12 @@ from pymongo import MongoClient, InsertOne
 from pymongo.errors import BulkWriteError
 from datetime import date
 
+
 MONGO_HOST = "127.0.0.1"
 MONGO_PORT = 27017
 NUMBER_INSERTS = 50000
+FIELDS = []
+FIELDS_FILE = 'database_fields.csv'
 
 log_name = str(date.today().strftime('%b-%d-%Y')) + '.log'
 
@@ -29,7 +32,7 @@ def insert_registers(args):
     else:
         mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
 
-    mongoM_masterCOLL = mongo_masterDB.samples
+    mongoM_masterCOLL = mongo_masterDB.samples2
 
     patients = []
     drugs = []
@@ -40,7 +43,6 @@ def insert_registers(args):
     try:
         with open(args[1], encoding="utf-8") as csvfile:
             for line in csvfile:
-                auxLine = line
                 spplited_line = line.split(";")
 
                 if count == NUMBER_INSERTS:
@@ -74,37 +76,44 @@ def insert_registers(args):
 
 def insert_filename(filename, mongo, year):
     try:
-        mongo.fitxers.insert_one({'Fixer': filename,
-                                  'Any' : year})
+        mongo.fitxers.insert_one({FIELDS[20]: filename,
+                                  FIELDS[19] : year,
+                                  FIELD[21]: datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                  })
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
 
 def add_tractament(line, year):
-    return InsertOne({'Rec': int(line[13].split(",")[0]),
-                      'ENV': int(line[14].split(",")[0]),
-                      'Aportacion_cliente': float(line[16].replace(",",".")),
-                      'LIQ': float(line[17].replace(",",".")),
-                      'Pacient': {'Identificador': int(line[1]),
-                                  'Actiu/Pensionista': line[2][1:-1],
-                                  'Titular/Beneficiari': line[3][1:-1],
-                                  'Edat': int(line[4]),
-                                  'AnysEdat': int(float(line[5].replace(",","."))),
-                                  'Sexe': int(line[6][1:-1]) },
-                      'Medicament': {'Codi_Medicament': int(line[10]),
-                                     'Nom_Medicament': line[11][1:-1],
-                                     'PVP': float(line[14].replace(",",".")),
-                                     'GT': line[12][1:-1]
+    return InsertOne({FIELDS[4]: int(line[13].split(",")[0]),
+                      FIELDS[5]: int(line[14].split(",")[0]),
+                      FIELDS[6]: float(line[16].replace(",",".")),
+                      FIELDS[7]: float(line[17].replace(",",".")),
+                      FIELDS[0]: {FIELDS[8]: int(line[1]),
+                                  FIELDS[9]: line[2][1:-1],
+                                  FIELDS[10]: line[3][1:-1],
+                                  FIELDS[11]: int(line[4]),
+                                  FIELDS[12]: int(float(line[5].replace(",","."))),
+                                  FIELDS[13]: int(line[6][1:-1]) },
+                      FIELDS[1]: {FIELDS[14]: int(line[10]),
+                                     FIELDS[15]: line[11][1:-1],
+                                     FIELDS[16]: float(line[14].replace(",",".")),
+                                     FIELDS[17]: line[12][1:-1]
                                      },
-                      'Metge': {'NumColegiat': line[9]},
-                      'Any': year
+                      FIELDS[2]: {FIELDS[18]: line[9]},
+                      FIELDS[19]: year
                       })
 
+def parse_fields():
+    with open(FIELDS_FILE, encoding="utf-8") as csvfile:
+            for line in csvfile:
+                FIELDS.append(line.split(";")[0])
+    
 
 def insert_tractaments(tractaments, mongo):
     try:
-        mongo.tractaments.create_index('Medicament.Codi_Medicament', unique=False)
-        mongo.tractaments.create_index('Pacient.Identificador', unique=False)
+        mongo.tractaments.create_index(FIELDS[1]+'.'+FIELDS[14], unique=False)
+        mongo.tractaments.create_index(FIELDS[0]+'.'+FIELDS[8], unique=False)
         mongo.tractaments.bulk_write(tractaments, ordered=False)
 
     except BulkWriteError as bwe:
@@ -113,7 +122,7 @@ def insert_tractaments(tractaments, mongo):
 
 def insert_patients(patients, mongo):
     try:
-        mongo.pacients.create_index('Identificador', unique=True)
+        mongo.pacients.create_index(FIELDS[8], unique=True)
         mongo.pacients.bulk_write(patients, ordered=False)
 
     except BulkWriteError as bwe:
@@ -122,8 +131,8 @@ def insert_patients(patients, mongo):
 
 def insert_drugs(drugs, mongo):
     try:
-        mongo.medicament.create_index('Codi_Medicament', unique=True)
-        mongo.medicament.create_index('GT', unique=True)
+        mongo.medicament.create_index(FIELDS[14], unique=True)
+        mongo.medicament.create_index(FIELDS[17], unique=True)
         mongo.medicament.bulk_write(drugs, ordered=False)
 
     except BulkWriteError as bwe:
@@ -132,7 +141,7 @@ def insert_drugs(drugs, mongo):
 
 def insert_doctors(doctors, mongo):
     try:
-        mongo.metges.create_index('NumColegiat', unique=True)
+        mongo.metges.create_index(FIELDS[18], unique=True)
         mongo.metges.bulk_write(doctors, ordered=False)
 
     except BulkWriteError as bwe:
@@ -140,35 +149,36 @@ def insert_doctors(doctors, mongo):
 
 
 def add_doctors(line):
-    return InsertOne({'NumColegiat': line[9],
+    return InsertOne({FIELDS[18]: line[9],
                       # 'Nom': line[18],
                       # 'Codi_ABS': line[19]
                       })
 
 
 def add_drugs(line, year):
-    return InsertOne({'Codi_Medicament': int(line[10]),
-                      'Nom_Medicament': line[11][1:-1],
-                      'PVP': float(line[14].replace(",",".")),
-                      'GT': line[12][1:-1],
-                      'Any': year
+    return InsertOne({FIELDS[14]: int(line[10]),
+                      FIELDS[15]: line[11][1:-1],
+                      FIELDS[16]: float(line[14].replace(",",".")),
+                      FIELDS[17]: line[12][1:-1],
+                      FIELDS[19]: year
                       })
 
 
 def add_patient(line, year):
-    return InsertOne({'Identificador': int(line[1]),
-                      'Actiu/Pensionista': line[2][1:-1],
-                      'Titular/Beneficiari': line[3][1:-1],
-                      'Edat': int(line[4]),
-                      'AnysEdat': int(float(line[5].replace(",","."))),
-                      'Sexe': int(line[6][1:-1]),
-                      'Any': year
+    return InsertOne({FIELDS[8]: int(line[1]),
+                      FIELDS[9]: line[2][1:-1],
+                      FIELDS[10]: line[3][1:-1],
+                      FIELDS[11]: int(line[4]),
+                      FIELDS[12]: int(float(line[5].replace(",","."))),
+                      FIELDS[13]: int(line[6][1:-1]),
+                      FIELDS[19]: year
                       })
 
 
 if __name__ == '__main__':
     
     if len(sys.argv) >= 2:
+        parse_fields()
         insert_registers(sys.argv)
     else:
         print("WRONG SINTAX - it must match: python3 import_mongo {CSVFILE} [MONGO_IP MONGO_PORT]")
