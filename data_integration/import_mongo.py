@@ -3,7 +3,7 @@ import logging.handlers
 
 from pymongo import MongoClient, InsertOne
 from pymongo.errors import BulkWriteError
-from datetime import date
+from datetime import date, datetime
 
 
 MONGO_HOST = "127.0.0.1"
@@ -11,6 +11,7 @@ MONGO_PORT = 27017
 NUMBER_INSERTS = 50000
 FIELDS = []
 FIELDS_FILE = 'database_fields.csv'
+DESCRIPTIONS = []
 
 log_name = str(date.today().strftime('%b-%d-%Y')) + '.log'
 
@@ -25,14 +26,14 @@ logger = logging.getLogger(log_name)
 
 def insert_registers(args):
     year = int(args[1].split("/")[-1].split("_")[1].split(".")[0])
-    filename = args[1]
+    filename = args[1].split("/")[-1]
 
     if len(args) == 4:
         mongo_masterDB = MongoClient(args[2], int(args[3]))
     else:
         mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
 
-    mongoM_masterCOLL = mongo_masterDB.samples2
+    mongoM_masterCOLL = mongo_masterDB.samples
 
     patients = []
     drugs = []
@@ -69,16 +70,29 @@ def insert_registers(args):
         insert_doctors(doctors, mongoM_masterCOLL)
         insert_tractaments(tractaments, mongoM_masterCOLL)
         insert_filename(filename, mongoM_masterCOLL,year)
+        insert_fields(mongoM_masterCOLL)
         
     except Exception as e:
         logger.error(e)
         sys.exit()
 
+def insert_fields(mongo):
+    record = []
+    try:
+        for x in range(len(FIELDS)):
+            record.append(InsertOne({'Field': FIELDS[x],
+                                    'Description': DESCRIPTIONS[x],
+                                    }))
+        mongo.descriptions.bulk_write(record, ordered=False)
+
+    except BulkWriteError as bwe:
+        logger.info(bwe.details)
+
 def insert_filename(filename, mongo, year):
     try:
         mongo.fitxers.insert_one({FIELDS[20]: filename,
-                                  FIELDS[19] : year,
-                                  FIELD[21]: datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                  FIELDS[19] : year,                              
+                                  FIELDS[21]: str(datetime.now())
                                   })
 
     except BulkWriteError as bwe:
@@ -108,6 +122,7 @@ def parse_fields():
     with open(FIELDS_FILE, encoding="utf-8") as csvfile:
             for line in csvfile:
                 FIELDS.append(line.split(";")[0])
+                DESCRIPTIONS.append(line.split(";")[1][:-2])
     
 
 def insert_tractaments(tractaments, mongo):
