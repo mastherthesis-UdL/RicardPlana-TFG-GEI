@@ -1,6 +1,7 @@
 import sys
 import logging.handlers
 
+
 from pymongo import MongoClient, InsertOne
 from pymongo.errors import BulkWriteError
 from datetime import date, datetime
@@ -33,7 +34,7 @@ def insert_registers(args):
     else:
         mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
 
-    mongoM_masterCOLL = mongo_masterDB.samples
+    mongoM_masterCOLL = mongo_masterDB.samples2
 
     patients = []
     drugs = []
@@ -69,61 +70,65 @@ def insert_registers(args):
         insert_drugs(drugs, mongoM_masterCOLL)
         insert_doctors(doctors, mongoM_masterCOLL)
         insert_tractaments(tractaments, mongoM_masterCOLL)
-        insert_filename(filename, mongoM_masterCOLL,year)
+        insert_filename(filename, mongoM_masterCOLL, year)
         insert_fields(mongoM_masterCOLL)
-        
+
     except Exception as e:
         logger.error(e)
         sys.exit()
+
 
 def insert_fields(mongo):
     record = []
     try:
         for x in range(len(FIELDS)):
             record.append(InsertOne({'Field': FIELDS[x],
-                                    'Description': DESCRIPTIONS[x],
-                                    }))
+                                     'Description': DESCRIPTIONS[x],
+                                     }))
         mongo.descriptions.bulk_write(record, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
 
+
 def insert_filename(filename, mongo, year):
     try:
         mongo.fitxers.insert_one({FIELDS[20]: filename,
-                                  FIELDS[19] : year,                              
+                                  FIELDS[19]: year,
                                   FIELDS[21]: str(datetime.now())
                                   })
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
 
+
 def add_tractament(line, year):
     return InsertOne({FIELDS[4]: int(line[13].split(",")[0]),
                       FIELDS[5]: int(line[14].split(",")[0]),
-                      FIELDS[6]: float(line[16].replace(",",".")),
-                      FIELDS[7]: float(line[17].replace(",",".")),
+                      FIELDS[6]: float(line[16].replace(",", ".")),
+                      FIELDS[7]: float(line[17].replace(",", ".")),
                       FIELDS[0]: {FIELDS[8]: int(line[1]),
                                   FIELDS[9]: line[2][1:-1],
                                   FIELDS[10]: line[3][1:-1],
                                   FIELDS[11]: int(line[4]),
-                                  FIELDS[12]: int(float(line[5].replace(",","."))),
-                                  FIELDS[13]: int(line[6][1:-1]) },
+                                  FIELDS[12]: int(float(line[5].replace(",", "."))),
+                                  FIELDS[13]: int(line[6][1:-1])},
                       FIELDS[1]: {FIELDS[14]: int(line[10]),
-                                     FIELDS[15]: line[11][1:-1],
-                                     FIELDS[16]: float(line[14].replace(",",".")),
-                                     FIELDS[17]: line[12][1:-1]
-                                     },
+                                  FIELDS[15]: line[11][1:-1],
+                                  FIELDS[16]: float(line[14].replace(",", ".")),
+                                  FIELDS[17]: line[12][1:-1]
+                                  },
                       FIELDS[2]: {FIELDS[18]: line[9]},
                       FIELDS[19]: year
                       })
 
+
 def parse_fields():
     with open(FIELDS_FILE, encoding="utf-8") as csvfile:
-            for line in csvfile:
-                FIELDS.append(line.split(";")[0])
-                DESCRIPTIONS.append(line.split(";")[1][:-2])
-    
+        for line in csvfile:
+            FIELDS.append(line.split(";")[0])
+            DESCRIPTIONS.append(line.split(";")[1][:-2])
+
 
 def insert_tractaments(tractaments, mongo):
     try:
@@ -171,29 +176,74 @@ def add_doctors(line):
 
 
 def add_drugs(line, year):
-    return InsertOne({FIELDS[14]: int(line[10]),
-                      FIELDS[15]: line[11][1:-1],
-                      FIELDS[16]: float(line[14].replace(",",".")),
-                      FIELDS[17]: line[12][1:-1],
+    parsed_line = parse_drugs(line)
+    return InsertOne({FIELDS[14]: parsed_line[0],
+                      FIELDS[15]: parsed_line[1],
+                      FIELDS[16]: parsed_line[2],
+                      FIELDS[17]: parsed_line[3],
                       FIELDS[19]: year
                       })
 
 
 def add_patient(line, year):
-    return InsertOne({FIELDS[8]: int(line[1]),
-                      FIELDS[9]: line[2][1:-1],
-                      FIELDS[10]: line[3][1:-1],
-                      FIELDS[11]: int(line[4]),
-                      FIELDS[12]: int(float(line[5].replace(",","."))),
-                      FIELDS[13]: int(line[6][1:-1]),
+    parsed_line = parse_patient(line)
+    return InsertOne({FIELDS[8]: parsed_line[0],
+                      FIELDS[9]: parsed_line[1],
+                      FIELDS[10]: parsed_line[2],
+                      FIELDS[11]: parsed_line[3],
+                      FIELDS[12]: parsed_line[4],
+                      FIELDS[13]: parsed_line[5],
                       FIELDS[19]: year
                       })
 
 
+def parse_patient(line):
+    newline = []
+    try:
+        newline.append(line[1])
+        newline.append(line[2].replace('"', ''))
+        newline.append(line[3].replace('"', ''))
+        try:
+            newline.append(int(line[4]))
+        except ValueError as e:
+            logger.info(e)
+            newline.append(int(0))
+        try:
+            newline.append(int(float(line[5].replace(",", "."))))
+        except ValueError as e:
+            logger.info(e)
+            newline.append(int(0))
+        try:
+            newline.append(int(line[6][1:-1]))
+        except ValueError as e:
+            logger.info(e)
+            newline.append(int(0))
+        return newline
+    except ValueError as e:
+        logger.info(e)
+
+
+def parse_drugs(line):
+    newline = []
+    try:
+        newline.append(line[10])
+        newline.append(line[11].replace('"', ''))
+        try:
+            newline.append(float(line[14].replace(",", ".")))
+        except ValueError as e:
+            logger.info(e)
+            newline.append(float(0))
+        newline.append(line[12][1:-1])
+        return newline
+    except ValueError as e:
+        logger.info(e)
+
+
 if __name__ == '__main__':
-    
+
     if len(sys.argv) >= 2:
         parse_fields()
         insert_registers(sys.argv)
     else:
-        print("WRONG SINTAX - it must match: python3 import_mongo {CSVFILE} [MONGO_IP MONGO_PORT]")
+        print(
+            "WRONG SINTAX - it must match: python3 import_mongo {CSVFILE} [MONGO_IP MONGO_PORT]")
