@@ -39,7 +39,7 @@ def insert_registers(args):
     patients = []
     drugs = []
     doctors = []
-    tractaments = []
+    treatments = []
     count = 0
 
     try:
@@ -52,24 +52,24 @@ def insert_registers(args):
                     insert_patients(patients, mongoM_masterCOLL)
                     insert_drugs(drugs, mongoM_masterCOLL)
                     insert_doctors(doctors, mongoM_masterCOLL)
-                    insert_tractaments(tractaments, mongoM_masterCOLL)
+                    insert_treatments(treatments, mongoM_masterCOLL)
 
                     patients = []
                     drugs = []
                     doctors = []
-                    tractaments = []
+                    treatments = []
 
                 patients.append(add_patient(spplited_line, year))
                 drugs.append(add_drugs(spplited_line, year))
                 doctors.append(add_doctors(spplited_line))
-                tractaments.append(add_tractament(spplited_line, year))
+                treatments.append(add_treatments(spplited_line, year))
 
                 count += 1
 
         insert_patients(patients, mongoM_masterCOLL)
         insert_drugs(drugs, mongoM_masterCOLL)
         insert_doctors(doctors, mongoM_masterCOLL)
-        insert_tractaments(tractaments, mongoM_masterCOLL)
+        insert_treatments(treatments, mongoM_masterCOLL)
         insert_filename(filename, mongoM_masterCOLL, year)
         insert_fields(mongoM_masterCOLL)
 
@@ -93,7 +93,7 @@ def insert_fields(mongo):
 
 def insert_filename(filename, mongo, year):
     try:
-        mongo.fitxers.insert_one({FIELDS[20]: filename,
+        mongo.files.insert_one({FIELDS[20]: filename,
                                   FIELDS[19]: year,
                                   FIELDS[21]: str(datetime.now())
                                   })
@@ -102,21 +102,23 @@ def insert_filename(filename, mongo, year):
         logger.info(bwe.details)
 
 
-def add_tractament(line, year):
+def add_treatments(line, year):
+    parsed_patients = parse_patient(line)
+    parsed_drugs = parse_drugs(line)
     return InsertOne({FIELDS[4]: int(line[13].split(",")[0]),
                       FIELDS[5]: int(line[14].split(",")[0]),
                       FIELDS[6]: float(line[16].replace(",", ".")),
                       FIELDS[7]: float(line[17].replace(",", ".")),
-                      FIELDS[0]: {FIELDS[8]: int(line[1]),
-                                  FIELDS[9]: line[2][1:-1],
-                                  FIELDS[10]: line[3][1:-1],
-                                  FIELDS[11]: int(line[4]),
-                                  FIELDS[12]: int(float(line[5].replace(",", "."))),
-                                  FIELDS[13]: int(line[6][1:-1])},
-                      FIELDS[1]: {FIELDS[14]: int(line[10]),
-                                  FIELDS[15]: line[11][1:-1],
-                                  FIELDS[16]: float(line[14].replace(",", ".")),
-                                  FIELDS[17]: line[12][1:-1]
+                      FIELDS[0]: {FIELDS[8]: parsed_patients[0],
+                                  FIELDS[9]: parsed_patients[1],
+                                  FIELDS[10]: parsed_patients[2],
+                                  FIELDS[11]: parsed_patients[3],
+                                  FIELDS[12]: parsed_patients[4],
+                                  FIELDS[13]: parsed_patients[5]},
+                      FIELDS[1]: {FIELDS[14]: parsed_drugs[0],
+                                  FIELDS[15]: parsed_drugs[1],
+                                  FIELDS[16]: parsed_drugs[2],
+                                  FIELDS[17]: parsed_drugs[3]
                                   },
                       FIELDS[2]: {FIELDS[18]: line[9]},
                       FIELDS[19]: year
@@ -130,11 +132,11 @@ def parse_fields():
             DESCRIPTIONS.append(line.split(";")[1][:-2])
 
 
-def insert_tractaments(tractaments, mongo):
+def insert_treatments(treatments, mongo):
     try:
-        mongo.tractaments.create_index(FIELDS[1]+'.'+FIELDS[14], unique=False)
-        mongo.tractaments.create_index(FIELDS[0]+'.'+FIELDS[8], unique=False)
-        mongo.tractaments.bulk_write(tractaments, ordered=False)
+        mongo.treatments.create_index(FIELDS[1]+'.'+FIELDS[14], unique=False)
+        mongo.treatments.create_index(FIELDS[0]+'.'+FIELDS[8], unique=False)
+        mongo.treatments.bulk_write(treatments, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -142,8 +144,8 @@ def insert_tractaments(tractaments, mongo):
 
 def insert_patients(patients, mongo):
     try:
-        mongo.pacients.create_index(FIELDS[8], unique=True)
-        mongo.pacients.bulk_write(patients, ordered=False)
+        mongo.patients.create_index(FIELDS[8], unique=True)
+        mongo.patients.bulk_write(patients, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -151,9 +153,9 @@ def insert_patients(patients, mongo):
 
 def insert_drugs(drugs, mongo):
     try:
-        mongo.medicament.create_index(FIELDS[14], unique=True)
-        mongo.medicament.create_index(FIELDS[17], unique=True)
-        mongo.medicament.bulk_write(drugs, ordered=False)
+        mongo.drugs.create_index(FIELDS[14], unique=True)
+        mongo.drugs.create_index(FIELDS[17], unique=True)
+        mongo.drugs.bulk_write(drugs, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -161,8 +163,8 @@ def insert_drugs(drugs, mongo):
 
 def insert_doctors(doctors, mongo):
     try:
-        mongo.metges.create_index(FIELDS[18], unique=True)
-        mongo.metges.bulk_write(doctors, ordered=False)
+        mongo.doctors.create_index(FIELDS[18], unique=True)
+        mongo.doctors.bulk_write(doctors, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
