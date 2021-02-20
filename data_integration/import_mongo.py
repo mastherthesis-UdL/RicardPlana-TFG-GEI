@@ -105,10 +105,11 @@ def insert_filename(filename, mongo, year):
 def add_treatments(line, year):
     parsed_patients = parse_patient(line)
     parsed_drugs = parse_drugs(line)
-    return InsertOne({FIELDS[4]: int(line[13].split(",")[0]),
-                      FIELDS[5]: int(line[14].split(",")[0]),
-                      FIELDS[6]: float(line[16].replace(",", ".")),
-                      FIELDS[7]: float(line[17].replace(",", ".")),
+    parsed_treatmens = parse_treatment(line)
+    return InsertOne({FIELDS[4]: parsed_treatmens[0],
+                      FIELDS[5]: parsed_treatmens[1],
+                      FIELDS[6]: parsed_treatmens[2],
+                      FIELDS[7]: parsed_treatmens[3],
                       FIELDS[0]: {FIELDS[8]: parsed_patients[0],
                                   FIELDS[9]: parsed_patients[1],
                                   FIELDS[10]: parsed_patients[2],
@@ -130,6 +131,37 @@ def parse_fields():
         for line in csvfile:
             FIELDS.append(line.split(";")[0])
             DESCRIPTIONS.append(line.split(";")[1][:-2])
+
+
+def parse_treatment(line):
+    newline = []
+
+    try:
+        newline.append(int(line[13].split(",")[0]))
+    except ValueError as e:
+        logger.info(e.details)
+        newline.append(int(0))
+
+    try:
+        newline.append(int(line[14].split(",")[0]))
+    except ValueError as e:
+        logger.info(e.details)
+        newline.append(int(0))
+
+    try:
+        newline.append(float(line[16].replace(",", ".")))
+    except ValueError as e:
+        logger.info(e.details)
+        newline.append(float(0))
+
+    try:
+        newline.append(float(line[17].replace(",", ".")))
+    except ValueError as e:
+        logger.info(e.details)
+        newline.append(float(0))
+
+    return newline
+
 
 
 def insert_treatments(treatments, mongo):
@@ -178,7 +210,7 @@ def add_doctors(line):
 
 
 def add_drugs(line, year):
-    parsed_line = parse_drugs(line)
+    parsed_line=parse_drugs(line)
     return InsertOne({FIELDS[14]: parsed_line[0],
                       FIELDS[15]: parsed_line[1],
                       FIELDS[16]: parsed_line[2],
@@ -188,7 +220,7 @@ def add_drugs(line, year):
 
 
 def add_patient(line, year):
-    parsed_line = parse_patient(line)
+    parsed_line=parse_patient(line)
     return InsertOne({FIELDS[8]: parsed_line[0],
                       FIELDS[9]: parsed_line[1],
                       FIELDS[10]: parsed_line[2],
@@ -200,7 +232,7 @@ def add_patient(line, year):
 
 
 def parse_patient(line):
-    newline = []
+    newline=[]
     try:
         newline.append(line[1])
         newline.append(line[2].replace('"', ''))
@@ -226,7 +258,7 @@ def parse_patient(line):
 
 
 def parse_drugs(line):
-    newline = []
+    newline=[]
     try:
         newline.append(line[10])
         newline.append(line[11].replace('"', ''))
