@@ -34,7 +34,7 @@ def insert_registers(args):
     else:
         mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
 
-    mongoM_masterCOLL = mongo_masterDB.samples2
+    mongoM_masterCOLL = mongo_masterDB.samples
 
     patients = []
     drugs = []
@@ -94,9 +94,9 @@ def insert_fields(mongo):
 def insert_filename(filename, mongo, year):
     try:
         mongo.files.insert_one({FIELDS[20]: filename,
-                                  FIELDS[19]: year,
-                                  FIELDS[21]: str(datetime.now())
-                                  })
+                                FIELDS[19]: year,
+                                FIELDS[21]: str(datetime.now())
+                                })
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -163,7 +163,6 @@ def parse_treatment(line):
     return newline
 
 
-
 def insert_treatments(treatments, mongo):
     try:
         mongo.treatments.create_index(FIELDS[1]+'.'+FIELDS[14], unique=False)
@@ -186,7 +185,7 @@ def insert_patients(patients, mongo):
 def insert_drugs(drugs, mongo):
     try:
         mongo.drugs.create_index(FIELDS[14], unique=True)
-        mongo.drugs.create_index(FIELDS[17], unique=True)
+        mongo.drugs.create_index(FIELDS[17], unique=False)
         mongo.drugs.bulk_write(drugs, ordered=False)
 
     except BulkWriteError as bwe:
@@ -210,7 +209,7 @@ def add_doctors(line):
 
 
 def add_drugs(line, year):
-    parsed_line=parse_drugs(line)
+    parsed_line = parse_drugs(line)
     return InsertOne({FIELDS[14]: parsed_line[0],
                       FIELDS[15]: parsed_line[1],
                       FIELDS[16]: parsed_line[2],
@@ -220,7 +219,7 @@ def add_drugs(line, year):
 
 
 def add_patient(line, year):
-    parsed_line=parse_patient(line)
+    parsed_line = parse_patient(line)
     return InsertOne({FIELDS[8]: parsed_line[0],
                       FIELDS[9]: parsed_line[1],
                       FIELDS[10]: parsed_line[2],
@@ -232,7 +231,7 @@ def add_patient(line, year):
 
 
 def parse_patient(line):
-    newline=[]
+    newline = []
     try:
         newline.append(line[1])
         newline.append(line[2].replace('"', ''))
@@ -258,7 +257,7 @@ def parse_patient(line):
 
 
 def parse_drugs(line):
-    newline=[]
+    newline = []
     try:
         newline.append(line[10])
         newline.append(line[11].replace('"', ''))
