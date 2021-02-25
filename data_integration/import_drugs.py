@@ -39,64 +39,11 @@ def check_file(_args):
                         "DDD_msc": nLine[10],
                         "Numero_DDD_msc": nLine[11], 
                         "Numero_DDD_calculat": nLine[12], 
-                        "Unitats_DDD": nLine[13],
+                        "Unitats_DDD": nLine[13][1:-1],
                         #"GT": "",                      
                         }
                     }, upsert=True)
-                '''if(count == INSERTS):
-                    try:
-                        col.bulk_write(to_insert, ordered=False)
-                    except BulkWriteError:
-                        pass
-                        
-                    to_insert = []
-                    count = 0
-
-                to_insert.append(
-                    UpdateOne(
-                    {"Codi_Medicament": nLine[14]},
-                    {"$set":
-                        {"Codi_ATC5": nLine[0],
-                        "Nom_ATC5": nLine[1],
-                        "Codi_ATC7": nLine[2],
-                        "Nom_ATC7": nLine[3],
-                        "Numero_Principi_Actiu(PA)": nLine[4],
-                        "Codi_PA": nLine[5],
-                        "Nom_PA": nLine[6],
-                        "Quantitat_PA": nLine[7],
-                        "Unitats": nLine[8],
-                        "DDD": nLine[9], 
-                        "DDD_msc": nLine[10],
-                        "Numero_DDD_msc": nLine[11], 
-                        "Numero_DDD_calculat": nLine[12], 
-                        "Unitats_DDD": nLine[13]
-                    }},True))
-            count += 1'''
-        '''try:
-            col.bulk_write(to_insert,ordered=False)
-        except BulkWriteError as w:
-            pass'''
-        '''doc = col.find_one_and_update(
-            {"Codi_Medicament": str(
-                int(float(spplited_line[7].replace(",", "."))))},
-            {"$set":
-            {"Codi_ATC5": nLine[0],
-            "Nom_ATC5": nLine[1],
-            "Codi_ATC7": nLine[2],
-            "Nom_ATC7": nLine[3],
-            "Numero_Principi_Actiu(PA)": nLine[4],
-            "Codi_PA": nLine[5],
-            "Nom_PA": nLine[6],
-            "Quantitat_PA": nLine[7],
-            "Unitats": nLine[8],
-            "DDD": nLine[9], 
-            "DDD_msc": nLine[10],
-            "Numero_DDD_msc": nLine[11], 
-            "Numero_DDD_calculat": nLine[12], 
-            "Unitats_DDD": nLine[13]
-            }
-            }, upsert=True
-        )'''
+                
     except Exception as e:
         print(e)
         print(line)
