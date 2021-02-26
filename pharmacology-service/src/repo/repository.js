@@ -88,7 +88,7 @@ const repository = (db) => {
     console.log(_filters)
 
     return new Promise((resolve, reject) => {
-      tractaments.find(
+      treatments.find(
         _filters
       ).select(fields_filter).then(_matrix => {
         resolve(_matrix)
