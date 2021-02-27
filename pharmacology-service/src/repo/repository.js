@@ -8,7 +8,7 @@ const repository = (db) => {
     
     let medicaments_filter = {}
     let medicaments = []
-    if ( options.filters.medicaments !== undefined){
+    if (options.filters.medicaments !== undefined){
 
          for (let m in options.filters.medicaments){
             let aux = {}
@@ -88,7 +88,7 @@ const repository = (db) => {
     console.log(_filters)
 
     return new Promise((resolve, reject) => {
-      treatments.find(
+      tractaments.find(
         _filters
       ).select(fields_filter).then(_matrix => {
         resolve(_matrix)
@@ -116,4 +116,3 @@ const connect = (connection) => {
 }
 
 module.exports = Object.assign({}, {connect})
-

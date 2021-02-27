@@ -4,11 +4,11 @@ let  PacientsSchema = new mongoose.Schema({
   'Identificador': {type: String},
   'Actiu/Pensionista': {type: String},
   'Titular/Beneficiari': {type: String},
-  'Edat': {type: Int32},
-  'AnysEdat': {type: Int32},
-  'Sexe': {type: Int32},
-  'Any': {type: Int32}
+  'Edat': {type: Number},
+  'AnysEdat': {type: Number},
+  'Sexe': {type: Number},
+  'Any': {type: Number}
 }, {timestamps: false})
 
-const Pacients = mongoose.model('Pacients', PacientsSchema, 'patients')
+const Pacients = mongoose.model('Pacients', PacientsSchema, 'pacients')
 module.exports = {Pacients, PacientsSchema}

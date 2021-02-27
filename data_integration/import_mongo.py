@@ -85,7 +85,7 @@ def insert_fields(mongo):
             record.append(InsertOne({'Field': FIELDS[x],
                                      'Description': DESCRIPTIONS[x],
                                      }))
-        mongo.descriptions.bulk_write(record, ordered=False)
+        mongo.descripcions.bulk_write(record, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -93,7 +93,7 @@ def insert_fields(mongo):
 
 def insert_filename(filename, mongo, year):
     try:
-        mongo.files.insert_one({FIELDS[20]: filename,
+        mongo.fitxers.insert_one({FIELDS[20]: filename,
                                 FIELDS[19]: year,
                                 FIELDS[21]: str(datetime.now())
                                 })
@@ -165,9 +165,9 @@ def parse_treatment(line):
 
 def insert_treatments(treatments, mongo):
     try:
-        mongo.treatments.create_index(FIELDS[1]+'.'+FIELDS[14], unique=False)
-        mongo.treatments.create_index(FIELDS[0]+'.'+FIELDS[8], unique=False)
-        mongo.treatments.bulk_write(treatments, ordered=False)
+        mongo.tractaments.create_index(FIELDS[1]+'.'+FIELDS[14], unique=False)
+        mongo.tractaments.create_index(FIELDS[0]+'.'+FIELDS[8], unique=False)
+        mongo.tractaments.bulk_write(treatments, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -175,8 +175,8 @@ def insert_treatments(treatments, mongo):
 
 def insert_patients(patients, mongo):
     try:
-        mongo.patients.create_index(FIELDS[8], unique=True)
-        mongo.patients.bulk_write(patients, ordered=False)
+        mongo.pacients.create_index(FIELDS[8], unique=True)
+        mongo.pacients.bulk_write(patients, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -184,9 +184,9 @@ def insert_patients(patients, mongo):
 
 def insert_drugs(drugs, mongo):
     try:
-        mongo.drugs.create_index(FIELDS[14], unique=True)
-        mongo.drugs.create_index(FIELDS[17], unique=False)
-        mongo.drugs.bulk_write(drugs, ordered=False)
+        mongo.medicament.create_index(FIELDS[14], unique=True)
+        mongo.medicament.create_index(FIELDS[17], unique=False)
+        mongo.medicament.bulk_write(drugs, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)
@@ -194,8 +194,8 @@ def insert_drugs(drugs, mongo):
 
 def insert_doctors(doctors, mongo):
     try:
-        mongo.doctors.create_index(FIELDS[18], unique=True)
-        mongo.doctors.bulk_write(doctors, ordered=False)
+        mongo.metges.create_index(FIELDS[18], unique=True)
+        mongo.metges.bulk_write(doctors, ordered=False)
 
     except BulkWriteError as bwe:
         logger.info(bwe.details)

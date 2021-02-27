@@ -4,14 +4,15 @@ const pacients = require('./pacients.model')
 const medicament = require('./medicaments.model')
 
 let  TractamentsSchema = new mongoose.Schema({
-  Pacient: {type: pacients.PacientsSchema},
-  Medicament: {type: medicament.MedicamentSchema},
-  Metge: {type: mongoose.Schema.Types.ObjectId},
-  LIQ: {type: Double},
-  Rec: {type: Int32},
-  ENV: {type: Int32},
-  Aportacion_cliente: {type: Double},
+  'Pacient': {type: pacients.PacientsSchema},
+  'Medicament': {type: medicament.MedicamentSchema},
+  'Metge': {type: mongoose.Schema.Types.ObjectId},
+  'LIQ': {type: Number},
+  'Rec': {type: Number},
+  'ENV': {type: Number},
+  'Aportacion_cliente': {type: Number},
+  'Year': {type: Number}
 }, {timestamps: false})
 
-const Tractaments = mongoose.model('Tractaments', TractamentsSchema, 'treatments')
+const Tractaments = mongoose.model('Tractaments', TractamentsSchema, 'tractaments')
 module.exports = Tractaments
