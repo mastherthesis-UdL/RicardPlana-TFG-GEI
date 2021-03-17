@@ -8,7 +8,7 @@ const repository = (db) => {
     
     let medicaments_filter = {}
     let medicaments = []
-    if (options.filters.medicaments !== undefined){
+    if ( options.filters.medicaments !== undefined){
 
          for (let m in options.filters.medicaments){
             let aux = {}

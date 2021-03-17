@@ -18,7 +18,7 @@ def check_file(_args):
 
     mongo_masterDB = MongoClient(MONGO_HOST, MONGO_PORT)
     mongoM_masterCOLL = mongo_masterDB.samples
-    col = mongoM_masterCOLL["drugs"]
+    col = mongoM_masterCOLL["medicament"]
     try:
         with open(_args[1], encoding="latin-1") as csvfile:
             for line in csvfile:
