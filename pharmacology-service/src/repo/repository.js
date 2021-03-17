@@ -3,6 +3,7 @@
 const repository = (db) => {
 
   const tractaments = require('../model/tractaments.model')
+  const meds = require('../model/medicaments.model')
 
   const getTractaments= (options) => {
     
@@ -18,6 +19,22 @@ const repository = (db) => {
 
          medicaments_filter = {
            $or: medicaments
+       }
+    }
+
+    let fullmedicament_filter = {}
+    let codiMedicaments = []
+    if ( options.filters.codiMedicaments !== undefined){
+
+         for (let m in options.filters.codiMedicaments){
+            let aux = {}
+            aux['Codi_Medicament'] = options.filters.codiMedicaments[m]
+            codiMedicaments.push(aux)
+            console.log(aux)
+         }
+
+         fullmedicament_filter = {
+           $or: codiMedicaments
        }
     }
 
@@ -79,21 +96,42 @@ const repository = (db) => {
   //    }
 
   //  }
-    let _filterArray = []
-    _filterArray.push(medicaments_filter)
-    _filterArray.push(pacients_filter)
-    _filterArray.push(gt_filter)
-    let _filters = { $and: _filterArray}
+    
+    if(options.filters.medicaments !== undefined || options.filters.GT !== undefined || options.filters.pacients !== undefined)
+    {
+      let _filterArray = []
+      _filterArray.push(medicaments_filter)
+      _filterArray.push(pacients_filter)
+      _filterArray.push(gt_filter)
+      let _filters = { $and: _filterArray}
+  
+      console.log(_filters)
+  
+      return new Promise((resolve, reject) => {
+        tractaments.find(
+          _filters
+        ).select(fields_filter).then(_matrix => {
+          resolve(_matrix)
+        })
+      })  
+    }
+    else if (options.filters.codiMedicaments !== undefined)
+    {
+      let _filterArray = []
+      _filterArray.push(fullmedicament_filter)
+      let _filters = { $and: _filterArray}
+  
+      console.log(_filters)
+      console.log(fields_filter)
+      return new Promise((resolve, reject) => {
+        meds.Medicament.find(
+          _filters
+        ).select(fields_filter).then(_matrix => {
+          resolve(_matrix)
+        })
+      })  
 
-    console.log(_filters)
-
-    return new Promise((resolve, reject) => {
-      tractaments.find(
-        _filters
-      ).select(fields_filter).then(_matrix => {
-        resolve(_matrix)
-      })
-    })
+    }
   }
 
   const disconnect = () => {
