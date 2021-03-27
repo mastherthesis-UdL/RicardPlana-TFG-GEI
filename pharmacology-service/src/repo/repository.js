@@ -30,7 +30,7 @@ const repository = (db) => {
             let aux = {}
             aux['Codi_Medicament'] = options.filters.codiMedicaments[m]
             codiMedicaments.push(aux)
-            console.log(aux)
+            console.log(options.filters.codiMedicaments[m])
          }
 
          fullmedicament_filter = {

@@ -22,16 +22,5 @@ services:
         - ./pharmacology-service:/home/node/app
         - node_modules:/home/node/app/node_modules
       command: npm start
-
-  shiny-app:
-    container_name: pharmacology-shiny-app
-    build:
-      context: ./ShinyAPP
-      dockerfile: Dockerfile
-    ports:
-      - "3838:3838"
-    volumes:
-      - ./ShinyAPP/logs:/var/log/shiny-server
-      - ./ShinyAPP/apps:/srv/shiny-server 
 volumes:
   node_modules:
