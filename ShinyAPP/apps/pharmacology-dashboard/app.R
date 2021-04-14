@@ -42,7 +42,7 @@ printMap <- function(geojson, feat, output, incident) {
         i = feat$properties[incident]
         state_popup <- paste(i)
         feat$properties$style <- list(
-            fillColor = getColor(i)
+            #fillColor = getColor(i)
         )
         feat
     })
@@ -297,7 +297,7 @@ server <- function(input, output, session) {
     
     # Taula homes
     output$incidencia_provincia_lleida_homes <- renderDataTable({
-      df_incidencia_provincia_lleida_homes = read.csv('../../Distribucions/incidencia_provincia_lleida_homes.csv',sep=';')
+      df_incidencia_provincia_lleida_homes = read.csv('incidencia_provincia_lleida_homes.csv',sep=';')
       totals <- htmltools::withTags(table(
         tableHeader(df_incidencia_provincia_lleida_homes),
         #tableFooter(sapply(df_incidencia_provincia_lleida_homes, function(x) if(is.numeric(x)) sum(x)))
@@ -316,7 +316,7 @@ server <- function(input, output, session) {
     
     # Taula dones
     output$incidencia_provincia_lleida_dones <- renderDataTable({
-      incidencia_provincia_lleida_dones = read.csv('../../Distribucions/incidencia_provincia_lleida_dones.csv',sep=';')
+      incidencia_provincia_lleida_dones = read.csv('incidencia_provincia_lleida_dones.csv',sep=';')
       totals <- htmltools::withTags(table(
         tableHeader(incidencia_provincia_lleida_dones),
         tableFooter(sapply(incidencia_provincia_lleida_dones, function(x) if(is.numeric(x)) sum(x)))
@@ -419,11 +419,11 @@ server <- function(input, output, session) {
     })
     
     # Piramide d'Edat
-    df_distribucio2 = read.csv('distribucio-taula2.csv',sep=';')
-    output$distribution_plot <- renderPlot({
-        p<-plotPyramide(df_distribucio2)
-        print(p)
-    })
+    #df_distribucio2 = read.csv('distribucio-taula2.csv',sep=';')
+    #output$distribution_plot <- renderPlot({
+    #    p<-plotPyramide(df_distribucio2)
+    #    print(p)
+    #})
     
     ########### Secció Analisis Exploratori
     #TODO: Migrar tot el dashboard estátic cap a qui
