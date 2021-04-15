@@ -26,9 +26,8 @@ logger = logging.getLogger(log_name)
 
 
 def insert_registers(args):
-    year = int(args[1].split("/")[-1].split("_")[1].split(".")[0])
+    year = int(args[1].split("/")[-1].split("_")[-1].split(".")[0])
     filename = args[1].split("/")[-1]
-
     if len(args) == 4:
         mongo_masterDB = MongoClient(args[2], int(args[3]))
     else:
@@ -122,7 +121,8 @@ def add_treatments(line, year):
                                   FIELDS[17]: parsed_drugs[3]
                                   },
                       FIELDS[2]: {FIELDS[18]: line[9]},
-                      FIELDS[19]: year
+                      FIELDS[19]: year,
+                      FIELDS[22]: parsed_treatmens[4]
                       })
 
 
@@ -130,8 +130,7 @@ def parse_fields():
     with open(FIELDS_FILE, encoding="utf-8") as csvfile:
         for line in csvfile:
             FIELDS.append(line.split(";")[0])
-            DESCRIPTIONS.append(line.split(";")[1][:-2])
-
+            DESCRIPTIONS.append(line.split(";")[1][:-1])
 
 def parse_treatment(line):
     newline = []
@@ -159,6 +158,13 @@ def parse_treatment(line):
     except ValueError as e:
         logger.info(e.details)
         newline.append(float(0))
+    try:
+        newline.append(line[19][1:-2])
+    except ValueError as e:
+        logger.info(e.details)
+        newline.append("")
+
+        
 
     return newline
 

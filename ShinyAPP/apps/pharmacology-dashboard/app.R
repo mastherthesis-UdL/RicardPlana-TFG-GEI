@@ -117,7 +117,7 @@ sidebar <- dashboardSidebar(
         #menuItem("Taxes i correlacions", icon = icon("th"), tabName = "distribucions")
     )
 )
-
+url <- ("http://kenpom.com/team.php?team=Rice")
 # Cos del Dashboard amb les seve parts
 body <- dashboardBody(
     tabItems(
