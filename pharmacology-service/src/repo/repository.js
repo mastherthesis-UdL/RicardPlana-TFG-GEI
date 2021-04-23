@@ -3,6 +3,7 @@
 const repository = (db) => {
 
   const tractaments = require('../model/tractaments.model')
+  const patients_db = require('../model/pacients.model')
 
   const getTractaments= (options) => {
     
@@ -18,7 +19,7 @@ const repository = (db) => {
 
          medicaments_filter = {
            $or: medicaments
-       }
+       }     
     }
 
 
@@ -59,6 +60,36 @@ const repository = (db) => {
     }
 
     //console.log(fields_filter)
+
+    let patient_filter = {}
+    let patients = []
+    if ( options.filters.Sexe !== undefined){
+
+         for (let m in options.filters.Sexe){
+            let aux = {}
+            aux['Sexe'] = options.filters.Sexe[m]
+            patients.push(aux)
+            console.log(patients)
+         }
+
+         patient_filter = {
+           $or: patients
+       }
+
+       let _filterArray = []
+      _filterArray.push(patient_filter)
+      let _filters = { $and: _filterArray}
+       
+      return new Promise((resolve, reject) => {
+        patients_db.Pacients.find(
+          _filters
+        ).select(fields_filter).then(_matrix => {
+          resolve(_matrix)
+        })
+      })
+
+    }
+
 
     let _filterArray = []
     _filterArray.push(medicaments_filter)
