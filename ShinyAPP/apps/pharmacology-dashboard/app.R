@@ -130,6 +130,19 @@ getTotalPatients <- function(sexeValue){
 
   return(result)
 }
+
+getTotals <-function()
+{
+  paramsJson = paste('{"filters" : {"totalsCount": []}}')
+  headers = c('Content-Type' = 'application/json; charset=UTF-8')
+  request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
+  totalMalesJson <- content(request, "text", encoding = "UTF-8")
+  result <- fromJSON(totalMalesJson)
+  list <- list(result$sumPacient, result$sumLIQ, result$sumRec)
+
+  return(list)
+}
+
 # Menu
 sidebar <- dashboardSidebar(
     sidebarMenu(
@@ -139,6 +152,9 @@ sidebar <- dashboardSidebar(
     )
 )
 
+listCounts <- getTotals()
+numMales <- getTotalPatients(1)
+numWomens <- getTotalPatients(0)
 
 url <- ("http://kenpom.com/team.php?team=Rice")
 # Cos del Dashboard amb les seve parts
@@ -148,12 +164,12 @@ body <- dashboardBody(
                     h2("Resum dades analitzades"),
                     fluidRow(
                       # A static valueBox
-                      valueBox(getTotalPatients(1), "Total homes", icon = icon("male"), color = "aqua"),
-                      valueBox(getTotalPatients(0), "Total dones", icon = icon("female"), color = "blue"),
-                      valueBox(2398, "Mitja Edat", icon = icon("users"), color = "light-blue"),
-                      valueBox(2427, "????", icon = icon("meds"), color = "teal"),
-                      valueBox(2014, "Aportació total pacient", icon = icon("euro"), color = "olive"),
-                      valueBox(431.375, "Aportació total CATSalut", icon = icon("euro"), color = "purple"),
+                      valueBox(numMales, "Total homes", icon = icon("male"), color = "aqua"),
+                      valueBox(numWomens, "Total dones", icon = icon("female"), color = "blue"),
+                      valueBox(23123, "Mitja Edat", icon = icon("users"), color = "light-blue"),
+                      valueBox(listCounts[3], "Total Receptes", icon = icon("meds"), color = "teal"),
+                      valueBox(listCounts[1], "Aportació total pacient", icon = icon("euro"), color = "olive"),
+                      valueBox(listCounts[2], "Aportació total CATSalut", icon = icon("euro"), color = "purple")
 
                     ),
                     box( title = "Taula de incidència a Lleida per Homes", status = "primary", height =

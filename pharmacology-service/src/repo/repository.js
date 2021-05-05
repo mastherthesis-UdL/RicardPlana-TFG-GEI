@@ -91,6 +91,30 @@ const repository = (db) => {
       })
     }
 
+    if ( options.filters.totalsCount !== undefined){
+       
+      return new Promise((resolve, reject) => {
+        tractaments.aggregate(
+          [{
+            $group: {
+                _id: null,
+                sumPacient: {
+                    $sum: '$Aportacion_cliente'
+                },
+                sumLIQ: {
+                    $sum: '$LIQ'
+                },
+                sumRec: {
+                    $sum: '$Rec'
+                }
+            }
+        }]
+        ).then(_matrix => {
+          resolve(_matrix)
+        })
+      })
+    }
+
 
     let _filterArray = []
     _filterArray.push(medicaments_filter)
