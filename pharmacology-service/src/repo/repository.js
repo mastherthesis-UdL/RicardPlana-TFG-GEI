@@ -115,6 +115,22 @@ const repository = (db) => {
       })
     }
 
+    if ( options.filters.avgAge !== undefined){
+       
+      return new Promise((resolve, reject) => {
+        patients_db.Pacients.aggregate(
+          [{$match: {
+          }}, {$group: {
+            _id: null,  
+            avgEdad:{$avg:'$AnysEdat'}
+          
+            }}]
+        ).then(_matrix => {
+          resolve(_matrix)
+        })
+      })
+    }
+
 
     let _filterArray = []
     _filterArray.push(medicaments_filter)

@@ -143,6 +143,18 @@ getTotals <-function()
   return(list)
 }
 
+getAvgAge <-function()
+{
+  paramsJson = paste('{"filters" : {"avgAge": []}}')
+  headers = c('Content-Type' = 'application/json; charset=UTF-8')
+  request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
+  totalMalesJson <- content(request, "text", encoding = "UTF-8")
+  result <- fromJSON(totalMalesJson)
+  list <- list(result$avgEdad)
+
+  return(list)
+}
+
 # Menu
 sidebar <- dashboardSidebar(
     sidebarMenu(
@@ -156,6 +168,14 @@ listCounts <- getTotals()
 numMales <- getTotalPatients(1)
 numWomens <- getTotalPatients(0)
 
+#listCounts <- 1
+#numMales <- 2
+#numWomens <- 3
+
+avgAge <- getAvgAge()
+roundedAVG <- round(as.double(avgAge[1]), digits=0)
+
+
 url <- ("http://kenpom.com/team.php?team=Rice")
 # Cos del Dashboard amb les seve parts
 body <- dashboardBody(
@@ -166,10 +186,10 @@ body <- dashboardBody(
                       # A static valueBox
                       valueBox(numMales, "Total homes", icon = icon("male"), color = "aqua"),
                       valueBox(numWomens, "Total dones", icon = icon("female"), color = "blue"),
-                      valueBox(23123, "Mitja Edat", icon = icon("users"), color = "light-blue"),
+                      valueBox(roundedAVG, "Mitja Edat", icon = icon("users"), color = "light-blue"),
                       valueBox(listCounts[3], "Total Receptes", icon = icon("meds"), color = "teal"),
-                      valueBox(listCounts[1], "Aportació total pacient", icon = icon("euro"), color = "olive"),
-                      valueBox(listCounts[2], "Aportació total CATSalut", icon = icon("euro"), color = "purple")
+                      valueBox(round(as.double(listCounts[1]), digits=0), "Aportació total pacient", icon = icon("euro"), color = "olive"),
+                      valueBox(round(as.double(listCounts[2]), digits=0), "Aportació total CATSalut", icon = icon("euro"), color = "purple")
 
                     ),
                     box( title = "Taula de incidència a Lleida per Homes", status = "primary", height =
