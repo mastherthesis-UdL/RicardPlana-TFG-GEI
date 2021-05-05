@@ -11,6 +11,8 @@ library(plyr)
 library(tidyverse)
 library(ggpol)
 require(RColorBrewer)
+library(httr)
+library(htmltools)
 
 # Funció per imprimer una piràmide poblacional 
 # @df = dataframe amb tres columnes Edat,Valor i Sexe
@@ -27,6 +29,13 @@ plotPyramide <- function(df){
     p <- p + theme(text = element_text(size = 16))
     
     return(p)
+}
+getTotalOfArrayList <- function(listNumeric) {
+  total = 0
+  for (element in listNumeric) {
+    total = total + element
+  }
+  return(total)
 }
 
 # Funció per obtenir tots el tipus de cancer que analitzarem
@@ -75,6 +84,8 @@ getColor <- function(incidencia) {
 
 }
 
+
+
 printTable <- function(output, valueRb){
   print(valueRb)
   output$distribucio_taula <- renderDataTable({
@@ -106,17 +117,29 @@ printTable <- function(output, valueRb){
     )
     
   })
+  
 }
 
+getTotalPatients <- function(sexeValue){
 
+  paramsJson = paste('{"filters" : {"Sexe": [',sexeValue,']}}')
+  headers = c('Content-Type' = 'application/json; charset=UTF-8')
+  request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
+  totalMalesJson <- content(request, "text", encoding = "UTF-8")
+  result <- fromJSON(totalMalesJson)
+
+  return(result)
+}
 # Menu
 sidebar <- dashboardSidebar(
     sidebarMenu(
-        menuItem("Resum", tabName = "resum", icon = icon("calendar")),
-        menuItem("Incidència", tabName = "incidencia", icon = icon("map"))
+        menuItem("Menu Principal", tabName = "resum", icon = icon("dashboard")),
+        menuItem("MAPA ABS", tabName = "incidencia", icon = icon("map"))
         #menuItem("Taxes i correlacions", icon = icon("th"), tabName = "distribucions")
     )
 )
+
+
 url <- ("http://kenpom.com/team.php?team=Rice")
 # Cos del Dashboard amb les seve parts
 body <- dashboardBody(
@@ -125,12 +148,12 @@ body <- dashboardBody(
                     h2("Resum dades analitzades"),
                     fluidRow(
                       # A static valueBox
-                      valueBox(1420, "Total homes", icon = icon("male"), color = "aqua"),
-                      valueBox(978, "Total dones", icon = icon("female"), color = "blue"),
-                      valueBox(2398, "Total pacients", icon = icon("users"), color = "light-blue"),
-                      valueBox(2427, "Total tumors", icon = icon("user-md"), color = "teal"),
-                      valueBox(2014, "Any d'estudi", icon = icon("calendar"), color = "olive"),
-                      valueBox(431.375, "Població total", icon = icon("globe"), color = "purple"),
+                      valueBox(getTotalPatients(1), "Total homes", icon = icon("male"), color = "aqua"),
+                      valueBox(getTotalPatients(0), "Total dones", icon = icon("female"), color = "blue"),
+                      valueBox(2398, "Mitja Edat", icon = icon("users"), color = "light-blue"),
+                      valueBox(2427, "????", icon = icon("meds"), color = "teal"),
+                      valueBox(2014, "Aportació total pacient", icon = icon("euro"), color = "olive"),
+                      valueBox(431.375, "Aportació total CATSalut", icon = icon("euro"), color = "purple"),
 
                     ),
                     box( title = "Taula de incidència a Lleida per Homes", status = "primary", height =
@@ -147,7 +170,7 @@ body <- dashboardBody(
                     )
             ),
             tabItem(tabName = "incidencia",
-                    h2("Mapa d'incidència del càncer a la província de Lleida"),
+                    h2("Mapa ABS"),
                     fluidRow(
                     column(width = 9,
                        box(width = NULL, solidHeader = TRUE,
@@ -432,5 +455,5 @@ server <- function(input, output, session) {
 
 
 
-
+options(shiny.autoreload = TRUE)
 shinyApp(ui, server)

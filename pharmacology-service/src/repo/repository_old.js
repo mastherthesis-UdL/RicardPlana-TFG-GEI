@@ -3,7 +3,7 @@
 const repository = (db) => {
 
   const tractaments = require('../model/tractaments.model')
-  const meds = require('../model/medicaments.model')
+  const patients_db = require('../model/pacients.model')
 
   const getTractaments= (options) => {
     
@@ -19,23 +19,7 @@ const repository = (db) => {
 
          medicaments_filter = {
            $or: medicaments
-       }
-    }
-
-    let fullmedicament_filter = {}
-    let codiMedicaments = []
-    if ( options.filters.codiMedicaments !== undefined){
-
-         for (let m in options.filters.codiMedicaments){
-            let aux = {}
-            aux['Codi_Medicament'] = options.filters.codiMedicaments[m]
-            codiMedicaments.push(aux)
-            console.log(options.filters.codiMedicaments[m])
-         }
-
-         fullmedicament_filter = {
-           $or: codiMedicaments
-       }
+       }     
     }
 
 
@@ -69,14 +53,6 @@ const repository = (db) => {
        }
     }
 
-    // let fields_filter = {}
-    // let i = 1
-    // if (options.filters.fields !== undefined){ 
-    //   for (let f in options.filters.fields){
-    //     fields_filter[i]=options.filters.fields[f]
-    //     i=i+1;
-    //   }
-    // }
 
     let  fields_filter = []
     if (options.filters.fields !== undefined){
@@ -85,56 +61,62 @@ const repository = (db) => {
 
     //console.log(fields_filter)
 
+    let patient_filter = {}
+    let patients = []
+    if ( options.filters.Sexe !== undefined){
 
-  //@TODO: Falta afegir el any al mongo
+         for (let m in options.filters.Sexe){
+            let aux = {}
+            aux['Sexe'] = options.filters.Sexe[m]
+            patients.push(aux)
+            console.log(patients)
+         }
 
-  //  let years_filter = {}
-  //  if (options.filters.years !== undefined){
+         patient_filter = {
+           $or: patients
+       }
 
-  //    years_filter = {
-  //      'Yr':{ $in : options.filters.years}
-  //    }
-
-  //  }
-    
-    if(options.filters.medicaments !== undefined || options.filters.GT !== undefined || options.filters.pacients !== undefined)
-    {
-      let _filterArray = []
-      _filterArray.push(medicaments_filter)
-      _filterArray.push(pacients_filter)
-      _filterArray.push(gt_filter)
+       let _filterArray = []
+      _filterArray.push(patient_filter)
       let _filters = { $and: _filterArray}
-  
-      console.log(_filters)
-  
+       
       return new Promise((resolve, reject) => {
-        tractaments.find(
+        patients_db.Pacients.find(
           _filters
         ).select(fields_filter).then(_matrix => {
           resolve(_matrix)
         })
-      })  
-    }
-    else if (options.filters.codiMedicaments !== undefined)
-    {
-      let _filterArray = []
-      _filterArray.push(fullmedicament_filter)
-      let _filters = { $and: _filterArray}
-  
-      console.log(_filters)
-      console.log(fields_filter)
-      return new Promise((resolve, reject) => {
-        meds.Medicament.agg
-        
-        
-        find(
-          _filters
-        ).select(fields_filter).then(_matrix => {
-          resolve(_matrix)
-        })
-      })  
+      })
+
+      
 
     }
+
+
+    let _filterArray = []
+    _filterArray.push(medicaments_filter)
+    _filterArray.push(pacients_filter)
+    _filterArray.push(gt_filter)
+    let _filters = { $and: _filterArray}
+
+    console.log(_filters)
+
+    return new Promise((resolve, reject) => {
+      tractaments.aggregate([{$match: 
+        _filters
+      }, {$lookup: {
+      
+       from: 'medicament',   
+       localField: 'Medicament.Codi_Medicament',    
+       foreignField: 'Codi_Medicament',   
+       as: 'Medicament'
+      
+      }}, {$unwind: {
+        path: "$Medicament"
+      }}]).then(_matrix => {
+        resolve(_matrix)
+      })
+    })
   }
 
   const disconnect = () => {

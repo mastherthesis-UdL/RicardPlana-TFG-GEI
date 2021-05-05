@@ -81,13 +81,14 @@ const repository = (db) => {
       let _filters = { $and: _filterArray}
        
       return new Promise((resolve, reject) => {
-        patients_db.Pacients.find(
+        patients_db.Pacients.aggregate([{$match: 
           _filters
-        ).select(fields_filter).then(_matrix => {
+        }, {$count: 'pacients'
+        }
+        ]).then(_matrix => {
           resolve(_matrix)
         })
       })
-
     }
 
 

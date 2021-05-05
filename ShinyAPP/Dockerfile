@@ -18,48 +18,28 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get install -y --no-install-recommends \
 
    ed \
-
    default-jdk \
-
    libgdal-dev \
    libgeos-c1v5 \
    default-jre \
    libproj-dev \
-
    icedtea-netx \
-
    libbz2-dev \
-
    libcairo2-dev \
-
    libgdal-dev \
-
    libicu-dev \
-
    liblzma-dev \
-
    libproj-dev \
-
    libgeos-dev \
-
    libgsl0-dev \
-
    librdf0-dev \
-
    librsvg2-dev \
-
    libv8-dev \
-
    libxcb1-dev \
-
    libxdmcp-dev \
-
    libxslt1-dev \
-
    libxt-dev \
-
    mdbtools \
-
    netcdf-bin \
 
  && . /etc/environment 
@@ -80,7 +60,7 @@ RUN wget --no-verbose https://download3.rstudio.org/ubuntu-14.04/x86_64/VERSION 
     gdebi -n ss-latest.deb && \
     rm -f version.txt ss-latest.deb && \
     . /etc/environment && \
-    R -e "install.packages(c('shiny', 'rmarkdown', 'shinydashboard', 'leaflet', 'RColorBrewer','jsonlite', 'DT', 'geojsonio','ggplot2', 'reshape2', 'plyr', 'tidyverse', 'ggpol', 'RColorBrewer', 'RMongo' ))" && \
+    R -e "install.packages(c('shiny', 'rmarkdown', 'shinydashboard', 'leaflet', 'RColorBrewer','jsonlite', 'DT', 'geojsonio','ggplot2', 'reshape2', 'plyr', 'tidyverse', 'ggpol', 'RColorBrewer', 'httr', 'htmltools', 'rjson'))" && \
     cp -R /usr/local/lib/R/site-library/shiny/examples/* /srv/shiny-server/ && \
     chown shiny:shiny /var/lib/shiny-server
 
