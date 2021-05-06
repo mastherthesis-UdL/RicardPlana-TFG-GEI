@@ -61,19 +61,21 @@ const repository = (db) => {
 
     //console.log(fields_filter)
 
-    let patient_filter = {}
-    let patients = []
+
     if ( options.filters.Sexe !== undefined){
 
-         for (let m in options.filters.Sexe){
-            let aux = {}
-            aux['Sexe'] = options.filters.Sexe[m]
-            patients.push(aux)
-            console.log(patients)
-         }
+      let patient_filter = {}
+      let patients = []
 
-         patient_filter = {
-           $or: patients
+      for (let m in options.filters.Sexe){
+        let aux = {}
+        aux['Sexe'] = options.filters.Sexe[m]
+        patients.push(aux)
+        console.log(patients)
+      }
+
+      patient_filter = {
+        $or: patients
        }
 
        let _filterArray = []
@@ -90,6 +92,8 @@ const repository = (db) => {
         })
       })
     }
+
+    
 
     if ( options.filters.totalsCount !== undefined){
        
@@ -130,6 +134,45 @@ const repository = (db) => {
         })
       })
     }
+
+    if ( options.filters.SexeCount !== undefined){
+
+      let patient_filter = {}
+      let patients = []
+
+      for (let m in options.filters.SexeCount){
+        let aux = {}
+        aux['Sexe'] = options.filters.SexeCount[m]
+        patients.push(aux)
+        console.log(patients)
+      }
+      console.log(patients)
+      patient_filter = {
+        $or: patients
+       }
+
+       let _filterArray = []
+      _filterArray.push(patient_filter)
+      let _filters = { $and: _filterArray}
+       
+      return new Promise((resolve, reject) => {
+        patients_db.Pacients.aggregate([{$match: 
+          _filters
+        }, {
+          $group: {
+              _id: '$AnysEdat',
+              count: {
+                  $sum: 1
+              }
+      
+          }
+        }
+        ]).then(_matrix => {
+          resolve(_matrix)
+        })
+      })
+    }
+    
 
 
     let _filterArray = []
