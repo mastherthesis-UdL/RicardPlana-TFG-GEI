@@ -159,7 +159,8 @@ getAvgAge <-function()
 sidebar <- dashboardSidebar(
     sidebarMenu(
         menuItem("Menu Principal", tabName = "resum", icon = icon("dashboard")),
-        menuItem("MAPA ABS", tabName = "incidencia", icon = icon("map"))
+        menuItem("MAPA ABS", tabName = "incidencia", icon = icon("map")),
+        menuItem("Pirámide de població", tabName = "populationpyramid", icon = icon("info"))
         #menuItem("Taxes i correlacions", icon = icon("th"), tabName = "distribucions")
     )
 )

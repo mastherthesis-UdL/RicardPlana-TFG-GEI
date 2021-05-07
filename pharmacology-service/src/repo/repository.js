@@ -4,6 +4,7 @@ const repository = (db) => {
 
   const tractaments = require('../model/tractaments.model')
   const patients_db = require('../model/pacients.model')
+  const meds_db     = require('../model/medicaments.model')
 
   const getTractaments= (options) => {
     
@@ -86,6 +87,36 @@ const repository = (db) => {
         patients_db.Pacients.aggregate([{$match: 
           _filters
         }, {$count: 'pacients'
+        }
+        ]).then(_matrix => {
+          resolve(_matrix)
+        })
+      })
+    }
+
+    if ( options.filters.Codi_Medicament !== undefined){
+
+      let meds_filter = {}
+      let meds = []
+
+      for (let m in options.filters.Codi_Medicament){
+        let aux = {}
+        aux['Codi_Medicament'] = options.filters.Codi_Medicament[m]
+        meds.push(aux)
+        console.log(meds)
+      }
+
+      meds_filter = {
+        $or: meds
+       }
+
+       let _filterArray = []
+      _filterArray.push(meds_filter)
+      let _filters = { $and: _filterArray}
+       
+      return new Promise((resolve, reject) => {
+        meds_db.Medicament.aggregate([{$match: 
+          _filters
         }
         ]).then(_matrix => {
           resolve(_matrix)
