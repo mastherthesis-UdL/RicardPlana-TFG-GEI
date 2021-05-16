@@ -13,22 +13,47 @@ library(ggpol)
 require(RColorBrewer)
 library(httr)
 library(htmltools)
+library(rgdal)
 
 # Funció per imprimer una piràmide poblacional 
 # @df = dataframe amb tres columnes Edat,Valor i Sexe
-plotPyramide <- function(df){ 
+
+getSexeCount <- function(sexeValue){
+
+  paramsJson = paste('{"filters" : {"SexeCount": [',sexeValue,']}}')
+  headers = c('Content-Type' = 'application/json; charset=UTF-8')
+  request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
+  sexeCount <- content(request, "text", encoding = "UTF-8")
+  result <- fromJSON(sexeCount)
+
+  return(result)
+}
+#result$sumPacient, result$sumLIQ, result$sumRec
+plotPyramide <- function(){ 
     
-    p <- ggplot(df, aes(x = Edat, y = Valor, fill = Sexe)) +
-        geom_bar(stat = "identity") +
-        facet_share(df$Sexe, dir = "h", reverse_num = FALSE) +  
-        coord_flip() +
-        scale_y_continuous() + 
-        theme_minimal() +
-        labs(y = "# Casos", x = "Grups d'edat", title = " ") +
-        scale_fill_manual(values = c("pink", "blue"))
-    p <- p + theme(text = element_text(size = 16))
+  countHomes <- getSexeCount(0)
+  countDones <- getSexeCount(1)
+  total <- data.frame()
+
+  for(i in 1:nrow(countHomes)){
+    value <- data.frame(Age= countHomes[i,1], Gender="Male", Population = countHomes[i,2])
+    total <-rbind(total, value)
+  }
+
+  for(i in 1:nrow(countDones)){
+    value <- data.frame(Age= countDones[i,1], Gender="Female", Population = countDones[i,2])
+    total <-rbind(total, value)
+  }
+
+  p <- ggplot(total, aes(x = Age, y = Population, fill = Gender)) + 
+  geom_bar(data = subset(total, Gender == "Female"), stat = "identity") + 
+  geom_bar(data = subset(total, Gender == "Male"), stat = "identity", aes(y=Population*(-1))) + 
+  scale_y_continuous(breaks=seq(-2000,2000,250),labels=abs(seq(-2000,2000,250))) + 
+  coord_flip()
+
+   #p <- p + theme(text = element_text(size = 16))
     
-    return(p)
+  return(p)
 }
 getTotalOfArrayList <- function(listNumeric) {
   total = 0
@@ -155,6 +180,38 @@ getAvgAge <-function()
   return(list)
 }
 
+getMedicament <-function()
+{
+  paramsJson = paste('{"filters" : {"Codi_Medicament": ["946582"]}}')
+  headers = c('Content-Type' = 'application/json; charset=UTF-8')
+  request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
+  medJson <- content(request, "text", encoding = "UTF-8")
+  result <- fromJSON(medJson)
+  list <- list(result$Codi_Medicament, result$Nom_Medicament, result$PVP, result$GT, result$Any, result$Codi_ATC5, result$Nom_ATC5, result$Codi_ATC7
+              , result$Nom_ATC7, result$"Numero_Principi_Actiu(PA)",result$Codi_PA, result$Nom_PA, result$Quantitat_PA, result$Unitats, result$DDD
+              , result$DDD_msc, result$Numero_DDD_msc, result$Numero_DDD_calculat
+              , result$Unitats_DDD)
+
+  return(list)
+}
+
+plotTest <- function(){ 
+    
+    test1 <- getSexeCount(1)
+    total <- data.frame()
+    
+
+    for(element in test1)
+    {
+      test <- element[0]
+    }
+
+   #p <- p + theme(text = element_text(size = 16))
+    
+    print(test)
+    return(test)
+}
+
 # Menu
 sidebar <- dashboardSidebar(
     sidebarMenu(
@@ -165,16 +222,12 @@ sidebar <- dashboardSidebar(
     )
 )
 
-listCounts <- getTotals()
-numMales <- getTotalPatients(1)
-numWomens <- getTotalPatients(0)
+#listCounts <- getTotals()
+#numMales <- getTotalPatients(0)
+#numWomens <- getTotalPatients(1)
+#avgAge <- getAvgAge()
+#roundedAVG <- round(as.double(avgAge[1]), digits=0)
 
-#listCounts <- 1
-#numMales <- 2
-#numWomens <- 3
-
-avgAge <- getAvgAge()
-roundedAVG <- round(as.double(avgAge[1]), digits=0)
 
 
 url <- ("http://kenpom.com/team.php?team=Rice")
@@ -184,78 +237,38 @@ body <- dashboardBody(
             tabItem(tabName = "resum",
                     h2("Resum dades analitzades"),
                     fluidRow(
+                      valueBox(plotTest(), "TEST", icon = icon("male"), color = "aqua"),
                       # A static valueBox
-                      valueBox(numMales, "Total homes", icon = icon("male"), color = "aqua"),
-                      valueBox(numWomens, "Total dones", icon = icon("female"), color = "blue"),
-                      valueBox(roundedAVG, "Mitja Edat", icon = icon("users"), color = "light-blue"),
-                      valueBox(listCounts[3], "Total Receptes", icon = icon("meds"), color = "teal"),
-                      valueBox(round(as.double(listCounts[1]), digits=0), "Aportació total pacient", icon = icon("euro"), color = "olive"),
-                      valueBox(round(as.double(listCounts[2]), digits=0), "Aportació total CATSalut", icon = icon("euro"), color = "purple")
+                      #valueBox(numMales, "Total homes", icon = icon("male"), color = "aqua"),
+                      #valueBox(numWomens, "Total dones", icon = icon("female"), color = "blue"),
+                      #valueBox(roundedAVG, "Mitja Edat", icon = icon("users"), color = "light-blue"),
+                      #valueBox(listCounts[3], "Total Receptes", icon = icon("meds"), color = "teal"),
+                      #valueBox(round(as.double(listCounts[1]), digits=0), "Aportació total pacient", icon = icon("euro"), color = "olive"),
+                      #valueBox(round(as.double(listCounts[2]), digits=0), "Aportació total CATSalut", icon = icon("euro"), color = "purple")
 
                     ),
-                    box( title = "Taula de incidència a Lleida per Homes", status = "primary", height =
-                           "595",width = "6",solidHeader = T,
-                         column(width = 12,
-                                DT::dataTableOutput("incidencia_provincia_lleida_homes"),style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
-                         )
-                    ),
-                    box( title = "Taula de incidència a Lleida per Dones", status = "primary", height =
-                           "595",width = "6",solidHeader = T,
-                         column(width = 12,
-                                DT::dataTableOutput("incidencia_provincia_lleida_dones"),style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
-                         )
-                    )
+                    #box( title = "Taula de incidència a Lleida per Homes", status = "primary", height =
+                    #       "595",width = "6",solidHeader = T,
+                     #    column(width = 12,
+                     #           DT::dataTableOutput("incidencia_provincia_lleida_homes"),style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
+                    #     )
+                   #),
+                    box(
+                        title = "Taula de medicaments",
+                        status = "info",
+                          textInput("caption", "Codi Medicament"),
+                          verbatimTextOutput("value"),
+                          tableOutput("obs")
+                    ) ,
+                    box(
+                        title = "Gràfica de la distribució",
+                        status = "info",
+                        plotOutput(
+                              outputId = "distribution_plot", height = 250)
+                    )                 
             ),
             tabItem(tabName = "incidencia",
-                    h2("Mapa ABS"),
-                    fluidRow(
-                    column(width = 9,
-                       box(width = NULL, solidHeader = TRUE,
-                           leafletOutput("map", height = 500)
-                       ),
-                       box(width = NULL,
-                           uiOutput("numVehiclesTable")
-                       )
-                    ),
-                    column(width = 3,
-                       box(width = NULL, status = "warning",
-                           radioButtons("rbZ", "Escull el zoom:",
-                                        choiceNames = list(
-                                            "Comarca",
-                                            "Municipi"
-                                        ),
-                                        choiceValues = list(
-                                            "Comarca", "Municipi"
-                                        )
-                           ),
-                           radioButtons("rb", "Escull el sexe:",
-                                        choiceNames = list(
-                                            "Homes",
-                                            "Dones"
-                                        ),
-                                        choiceValues = list(
-                                            "Homes", "Dones"
-                                        )
-                           ),
-                           selectInput("cancerList", "Tipus de càncer",
-                                       choices = c(
-                                           "Pulmó" = "Pulmo",
-                                           "Mama" = "Mama",
-                                           "Còlon" = "Colon",
-                                           "Recte" = "Recte",
-                                           "Pròstata" = "Prostata",
-                                           "Bufeta" = "Bufeta",
-                                           "Mieloma" = "Mieloma",
-                                           "Estómac" = "Estomac",
-                                           "Endometri" = "Endometri",
-                                           "Pell" = "Pell",
-                                           "Ossos" = "Ossos"
-                                       ),
-                                       selected = "pulmo"
-                           ), textOutput("list")
-                       )
-                )
-            )
+                leafletOutput("plot_abs")
             ),
         tabItem(tabName = "distribucions",
             h2("Distribucions totals del càncer"),
@@ -283,7 +296,7 @@ body <- dashboardBody(
                        ),
 
                    )
-            )
+            ),
             # box( title = "Taula de distribució", status = "primary", height =
             #          "100%",width = "12",solidHeader = T,
             #      column(width = 12,
@@ -297,12 +310,7 @@ body <- dashboardBody(
             #             DT::dataTableOutput("distribucio_taula"),style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
             #     )
             # ),
-            # box(
-            #     title = "Gràfica de la distribució",
-            #     status = "info",
-            #     plotOutput(
-            #         outputId = "distribution_plot", height = 250)
-            # )
+             
         )
     )
 )
@@ -325,24 +333,23 @@ server <- function(input, output, session) {
     zoom='Comarca'
     
     
-    #TODO: Permetre carregar el mapa de comarca o municipi en funcio de la selecció de l'usuari
-    
-    geojson <- readLines("comarques-lleida.geojson", warn = FALSE) %>%
-        paste(collapse = "\n") %>%
-        fromJSON(simplifyVector = FALSE)
-    
-    # Incidencia estimate from all comarques
-    incidencia <- sapply(geojson$features, function(feat) {
-        feat$properties$incidencia
+    #
+    abs <- readOGR("/srv/shiny-server/maps/ABS_2018.shp",
+                layer = "ABS_2018", GDAL1_integer64_policy = TRUE, use_iconv=TRUE, encoding="UTF-8")
+
+    output$plot_abs <- renderLeaflet({
+        leaflet(abs) %>%
+        setView(lng = 1.3984735784516196, lat = 42.091848475624886, zoom = 8) %>%
+        addTiles() %>%
+        #addProviderTiles(providers$Esri.WorldTopoMap) %>%
+        addPolygons(color = "#FF0000", weight = 1, smoothFactor = 0.5,
+                    opacity = 1.0, fillOpacity = 0.5,
+                    #fillColor = ~colorQuantile("YlOrRd", NA.)(NA.),
+                    highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                        bringToFront = TRUE))
     })
-    
-    # Default styles for all features
-    geojson$style = list(
-        weight = 1,
-        color = "#555555",
-        opacity = 1,
-        fillOpacity = 0.8
-    )
+
+    #TODO: Permetre carregar el mapa de comarca o municipi en funcio de la selecció de l'usuari
     
 
     output$txt <- renderText({
@@ -426,67 +433,21 @@ server <- function(input, output, session) {
         addPopups(click$lng, click$lat, text)
     })
 
-    ########### Secció Distribució
-    
-    #TODO: Fer.la dinàmica per mostrar totes les taules.
-
-    # Taula
-    output$distribucio_taula <- renderDataTable({
-        df_distribucio = read.csv('distribucio-taula.csv',sep=';')
-        totals <- htmltools::withTags(table(
-            tableHeader(df_distribucio),
-            tableFooter(sapply(df_distribucio, function(x) if(is.numeric(x)) sum(x)))
-        ))
-        
-        DT::datatable(df_distribucio,
-                      container=totals,
-                      caption = tags$caption("Example"), 
-                      rownames = F, options = list(autoWidth = T, 
-                                 paging=F,
-                                 scrollCollapse = T,
-                                 dom = 'lftp')
-                  )
-        
-    })
-    
-    v2 <- observeEvent(input$rbDist, {
-      #print(input$rbDist)
-      printTable(output, input$rbDist)
-    })
-    
-    
-    
-    
-    #TODO: Fer.la dinàmica per mostrar totes les taules.
-    
-    # Taula
-    output$distribucio_taula1 <- renderDataTable({
-      df_distribucio_taula1 = read.csv('dones-rural-2012.csv',sep=';')
-      totals <- htmltools::withTags(table(
-        tableHeader(df_distribucio_taula1),
-        tableFooter(sapply(df_distribucio_taula1, function(x) if(is.numeric(x)) sum(x)))
-      ))
-      
-      DT::datatable(df_distribucio_taula1,
-                    container=totals,
-                    caption = tags$caption("Example"), 
-                    rownames = F, options = list(autoWidth = T, 
-                                                 paging=F,
-                                                 scrollCollapse = T,
-                                                 dom = 'lftp')
-      )
-      
-    })
-    
     # Piramide d'Edat
-    #df_distribucio2 = read.csv('distribucio-taula2.csv',sep=';')
-    #output$distribution_plot <- renderPlot({
-    #    p<-plotPyramide(df_distribucio2)
-    #    print(p)
-    #})
-    
-    ########### Secció Analisis Exploratori
-    #TODO: Migrar tot el dashboard estátic cap a qui
+    output$distribution_plot <- renderPlot({
+        plotPyramide()
+    })
+    # Meds Table
+    listmeds <- getMedicament()
+    setValues <- list(listmeds[1], listmeds[2], listmeds[3], listmeds[4], listmeds[5], listmeds[6], listmeds[7], listmeds[8], listmeds[9]
+        , listmeds[10], listmeds[11], listmeds[12], listmeds[13], listmeds[14], listmeds[15], listmeds[16], listmeds[17],listmeds[18],listmeds[19])
+    values <- matrix(setValues, ncol = 1)
+    colnames(values) <- "Medicament"
+    rownames(values) <- c("Codi Medicament", "Nom Medicament", "PVP", "GT", "Any", "Codi_ATC5", "Nom_ATC5", "Codi_ATC7", "Nom_ATC7",
+                          "Numero_Principi_Actiu(PA)", "Codi_PA", "Nom_PA", "Quantitat_PA", "Unitats", "DDD", "DDD_msc", "Numero_DDD_msc",
+                          "Numero_DDD_calculat", "Unitats_DDD"
+                          )
+    output$obs <- renderTable({values}, rownames = TRUE)
     
 }
 
