@@ -35,20 +35,166 @@ plotPyramide <- function(){
   countDones <- getSexeCount(1)
   total <- data.frame()
 
+  ##MALE
+  #0-9
+  age1 = 0
+  #10-19
+  age2 = 0
+  #20-29
+  age3 = 0
+  #30-39
+  age4 = 0
+  #40-49
+  age5 = 0
+  #50-59
+  age6 = 0
+  #60-69
+  age7 = 0
+  #70-79
+  age8 = 0
+  #+80
+  age9 = 0
+
   for(i in 1:nrow(countHomes)){
-    value <- data.frame(Age= countHomes[i,1], Gender="Male", Population = countHomes[i,2])
-    total <-rbind(total, value)
+
+    if(countHomes[i,1] >= 0 && countHomes[i,1] <=9){
+      age1 = age1 + countHomes[i,2]
+    }   
+    else if(countHomes[i,1] >= 10 && countHomes[i,1] <=19){
+      age2 = age2 + countHomes[i,2]
+    }
+    else if(countHomes[i,1] >= 20 && countHomes[i,1] <=29){
+      age3 = age3 + countHomes[i,2]
+    }
+    else if(countHomes[i,1] >= 30 && countHomes[i,1] <=39){
+      age4 = age4 + countHomes[i,2]
+    }
+    else if(countHomes[i,1] >= 40 && countHomes[i,1] <=49){
+      age5 = age5 + countHomes[i,2]
+    }
+    else if(countHomes[i,1] >= 50 && countHomes[i,1] <=59){
+      age6 = age6 + countHomes[i,2]
+    }
+    else if(countHomes[i,1] >= 60 && countHomes[i,1] <=69){
+      age7 = age7 + countHomes[i,2]
+    }
+    else if(countHomes[i,1] >= 70 && countHomes[i,1] <=79){
+      age8 = age8 + countHomes[i,2]
+    }
+    else if(countHomes[i,1] >= 80){
+      age9 = age9 + countHomes[i,2]
+    }
   }
 
+  value <- data.frame(Age= "0-9", Gender="Male", Population = age1)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "10-19", Gender="Male", Population = age2)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "20-29", Gender="Male", Population = age3)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "30-39", Gender="Male", Population = age4)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "40-49", Gender="Male", Population = age5)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "50-59", Gender="Male", Population = age6)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "60-69", Gender="Male", Population = age7)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "70-79", Gender="Male", Population = age8)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "80+", Gender="Male", Population = age9)
+  total <-rbind(total, value)
+
+  ##FEMALE
+  #0-9
+  age1 = 0
+  #10-19
+  age2 = 0
+  #20-29
+  age3 = 0
+  #30-39
+  age4 = 0
+  #40-49
+  age5 = 0
+  #50-59
+  age6 = 0
+  #60-69
+  age7 = 0
+  #70-79
+  age8 = 0
+  #+80
+  age9 = 0
+
   for(i in 1:nrow(countDones)){
-    value <- data.frame(Age= countDones[i,1], Gender="Female", Population = countDones[i,2])
-    total <-rbind(total, value)
+
+    if(countDones[i,1] >= 0 && countDones[i,1] <=9){
+      age1 = age1 + countDones[i,2]
+    }   
+    else if(countDones[i,1] >= 10 && countDones[i,1] <=19){
+      age2 = age2 + countDones[i,2]
+    }
+    else if(countDones[i,1] >= 20 && countDones[i,1] <=29){
+      age3 = age3 + countDones[i,2]
+    }
+    else if(countDones[i,1] >= 30 && countDones[i,1] <=39){
+      age4 = age4 + countDones[i,2]
+    }
+    else if(countDones[i,1] >= 40 && countDones[i,1] <=49){
+      age5 = age5 + countDones[i,2]
+    }
+    else if(countDones[i,1] >= 50 && countDones[i,1] <=59){
+      age6 = age6 + countDones[i,2]
+    }
+    else if(countDones[i,1] >= 60 && countDones[i,1] <=69){
+      age7 = age7 + countDones[i,2]
+    }
+    else if(countDones[i,1] >= 70 && countDones[i,1] <=79){
+      age8 = age8 + countDones[i,2]
+    }
+    else if(countDones[i,1] >= 80){
+      age9 = age9 + countDones[i,2]
+    }
   }
+
+  value <- data.frame(Age= "0-9", Gender="Female", Population = age1)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "10-19", Gender="Female", Population = age2)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "20-29", Gender="Female", Population = age3)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "30-39", Gender="Female", Population = age4)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "40-49", Gender="Female", Population = age5)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "50-59", Gender="Female", Population = age6)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "60-69", Gender="Female", Population = age7)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "70-79", Gender="Female", Population = age8)
+  total <-rbind(total, value)
+
+  value <- data.frame(Age= "80+", Gender="Female", Population = age9)
+  total <-rbind(total, value)
 
   p <- ggplot(total, aes(x = Age, y = Population, fill = Gender)) + 
   geom_bar(data = subset(total, Gender == "Female"), stat = "identity") + 
   geom_bar(data = subset(total, Gender == "Male"), stat = "identity", aes(y=Population*(-1))) + 
-  scale_y_continuous(breaks=seq(-2000,2000,250),labels=abs(seq(-2000,2000,250))) + 
+  scale_y_continuous(breaks=seq(-20000,20000,5000),labels=abs(seq(-20000,20000,5000))) + 
   coord_flip()
 
    #p <- p + theme(text = element_text(size = 16))
@@ -163,7 +309,7 @@ getTotals <-function()
   request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
   totalMalesJson <- content(request, "text", encoding = "UTF-8")
   result <- fromJSON(totalMalesJson)
-  list <- list(result$sumPacient, result$sumLIQ, result$sumRec)
+  list <- list((result$sumPacient/1000000), (result$sumLIQ/1000000), (result$sumRec/1000000))
 
   return(list)
 }
@@ -195,23 +341,6 @@ getMedicament <-function()
   return(list)
 }
 
-plotTest <- function(){ 
-    
-    test1 <- getSexeCount(1)
-    total <- data.frame()
-    
-
-    for(element in test1)
-    {
-      test <- element[0]
-    }
-
-   #p <- p + theme(text = element_text(size = 16))
-    
-    print(test)
-    return(test)
-}
-
 # Menu
 sidebar <- dashboardSidebar(
     sidebarMenu(
@@ -222,11 +351,11 @@ sidebar <- dashboardSidebar(
     )
 )
 
-#listCounts <- getTotals()
-#numMales <- getTotalPatients(0)
-#numWomens <- getTotalPatients(1)
-#avgAge <- getAvgAge()
-#roundedAVG <- round(as.double(avgAge[1]), digits=0)
+listCounts <- getTotals()
+numMales <- getTotalPatients(0)
+numWomens <- getTotalPatients(1)
+avgAge <- getAvgAge()
+roundedAVG <- round(as.double(avgAge[1]), digits=0)
 
 
 
@@ -237,22 +366,14 @@ body <- dashboardBody(
             tabItem(tabName = "resum",
                     h2("Resum dades analitzades"),
                     fluidRow(
-                      valueBox(plotTest(), "TEST", icon = icon("male"), color = "aqua"),
                       # A static valueBox
-                      #valueBox(numMales, "Total homes", icon = icon("male"), color = "aqua"),
-                      #valueBox(numWomens, "Total dones", icon = icon("female"), color = "blue"),
-                      #valueBox(roundedAVG, "Mitja Edat", icon = icon("users"), color = "light-blue"),
-                      #valueBox(listCounts[3], "Total Receptes", icon = icon("meds"), color = "teal"),
-                      #valueBox(round(as.double(listCounts[1]), digits=0), "Aportació total pacient", icon = icon("euro"), color = "olive"),
-                      #valueBox(round(as.double(listCounts[2]), digits=0), "Aportació total CATSalut", icon = icon("euro"), color = "purple")
-
+                      valueBox(numMales, "Total homes", icon = icon("male"), color = "aqua"),
+                      valueBox(numWomens, "Total dones", icon = icon("female"), color = "blue"),
+                      valueBox(roundedAVG, "Mitja Edat", icon = icon("users"), color = "light-blue"),
+                      valueBox(paste(toString(round(as.double(listCounts[3]), digits=2)),' M'), "Total Receptes", icon = icon("meds"), color = "teal"),
+                      valueBox(paste(toString(round(as.double(listCounts[1]), digits=2)),' M'), "Aportació total pacient", icon = icon("euro"), color = "olive"),
+                      valueBox(paste(toString(round(as.double(listCounts[2]), digits=2)),' M'), "Aportació total CATSalut", icon = icon("euro"), color = "purple")
                     ),
-                    #box( title = "Taula de incidència a Lleida per Homes", status = "primary", height =
-                    #       "595",width = "6",solidHeader = T,
-                     #    column(width = 12,
-                     #           DT::dataTableOutput("incidencia_provincia_lleida_homes"),style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
-                    #     )
-                   #),
                     box(
                         title = "Taula de medicaments",
                         status = "info",
@@ -263,8 +384,7 @@ body <- dashboardBody(
                     box(
                         title = "Gràfica de la distribució",
                         status = "info",
-                        plotOutput(
-                              outputId = "distribution_plot", height = 250)
+                        plotOutput(outputId = "distribution_plot", height = 500)
                     )                 
             ),
             tabItem(tabName = "incidencia",
@@ -273,29 +393,6 @@ body <- dashboardBody(
         tabItem(tabName = "distribucions",
             h2("Distribucions totals del càncer"),
             column(width = 12,
-                   box(width = NULL, status = "warning",
-                       radioButtons("rbDist", "Escull la taula:",
-                                    choiceNames = list(
-                                      "Dones Rural 2012",
-                                      "Homes Rural 2012",
-                                      "Dones Urbà 2012",
-                                      "Homes Urbà 2012",
-                                      "Dones Rural 2013",
-                                      "Homes Rural 2013",
-                                      "Dones Urbà 2013",
-                                      "Homes Urbà 2013",
-                                      "Dones Rural 2014",
-                                      "Homes Rural 2014",
-                                      "Dones Urbà 2014",
-                                      "Homes Urbà 2014"
-                                    ),
-                                    choiceValues = list(
-                                      "dr12", "hr12", "du12", "hu12", "dr13", "hr13", "du13", "hu13", "dr14", "hr14", "du14", "hu14"
-                                    ),
-                                    inline = TRUE
-                       ),
-
-                   )
             ),
             # box( title = "Taula de distribució", status = "primary", height =
             #          "100%",width = "12",solidHeader = T,
@@ -324,15 +421,7 @@ ui <- dashboardPage(
     sidebar,body)
         
       
-server <- function(input, output, session) {
-    # Inicialització de valors
-    cancers <- cancerTypes()
-    incident=''
-    sexe ='Homes'
-    cancer='Pulmo'
-    zoom='Comarca'
-    
-    
+server <- function(input, output, session) {    
     #
     abs <- readOGR("/srv/shiny-server/maps/ABS_2018.shp",
                 layer = "ABS_2018", GDAL1_integer64_policy = TRUE, use_iconv=TRUE, encoding="UTF-8")
@@ -361,46 +450,7 @@ server <- function(input, output, session) {
     })
     
     ########### Secció Inicial - Dashboard
-    
-    # Taula homes
-    output$incidencia_provincia_lleida_homes <- renderDataTable({
-      df_incidencia_provincia_lleida_homes = read.csv('incidencia_provincia_lleida_homes.csv',sep=';')
-      totals <- htmltools::withTags(table(
-        tableHeader(df_incidencia_provincia_lleida_homes),
-        #tableFooter(sapply(df_incidencia_provincia_lleida_homes, function(x) if(is.numeric(x)) sum(x)))
-      ))
-      
-      DT::datatable(df_incidencia_provincia_lleida_homes,
-                    container=totals,
-                    #caption = tags$caption("Example"), 
-                    rownames = F, options = list(autoWidth = T, 
-                                                 paging=F,
-                                                 scrollCollapse = T,
-                                                 dom = 'lftp')
-      )
-      
-    })
-    
-    # Taula dones
-    output$incidencia_provincia_lleida_dones <- renderDataTable({
-      incidencia_provincia_lleida_dones = read.csv('incidencia_provincia_lleida_dones.csv',sep=';')
-      totals <- htmltools::withTags(table(
-        tableHeader(incidencia_provincia_lleida_dones),
-        tableFooter(sapply(incidencia_provincia_lleida_dones, function(x) if(is.numeric(x)) sum(x)))
-      ))
-      
-      DT::datatable(incidencia_provincia_lleida_dones,
-                    container=totals,
-                    #caption = tags$caption("Example"), 
-                    rownames = F, options = list(autoWidth = T, 
-                                                 paging=F,
-                                                 scrollCollapse = T,
-                                                 dom = 'lftp')
-      )
-      
-    })
-
-    
+     
     # Observem tots els events en incidencies, en cas que un usuari faci una selecció repintem el mapa.
     v <- observeEvent(req(input$rb,input$cancerList),{ 
         
@@ -421,18 +471,6 @@ server <- function(input, output, session) {
         printMap(geojson, feat, output, incident)
     })
     
-    observeEvent(input$map_click, {
-      print(2)
-      click <- input$map_click
-      print(click)
-      text<-paste("Lattitude ", click$lat, " Longitud ", click$lng)
-      incident <- paste("incident", cancer, sexe, sep="")
-
-      proxy <- leafletProxy("map")
-      proxy %>% clearPopups() %>%
-        addPopups(click$lng, click$lat, text)
-    })
-
     # Piramide d'Edat
     output$distribution_plot <- renderPlot({
         plotPyramide()

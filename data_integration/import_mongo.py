@@ -122,7 +122,8 @@ def add_treatments(line, year):
                                   },
                       FIELDS[2]: {FIELDS[18]: line[9]},
                       FIELDS[19]: year,
-                      FIELDS[22]: parsed_treatmens[4]
+                      FIELDS[22]: parsed_treatmens[4],
+                      FIELDS[23]: parsed_treatmens[5]
                       })
 
 
@@ -160,6 +161,11 @@ def parse_treatment(line):
         newline.append(float(0))
     try:
         newline.append(line[19][1:-2])
+    except ValueError as e:
+        logger.info(e.details)
+        newline.append("")
+    try:
+        newline.append(line[0][-2:])
     except ValueError as e:
         logger.info(e.details)
         newline.append("")
