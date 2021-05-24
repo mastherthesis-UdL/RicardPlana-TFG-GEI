@@ -14,6 +14,7 @@ require(RColorBrewer)
 library(httr)
 library(htmltools)
 library(rgdal)
+library(plotly)
 
 # Funció per imprimer una piràmide poblacional 
 # @df = dataframe amb tres columnes Edat,Valor i Sexe
@@ -26,6 +27,16 @@ getSexeCount <- function(sexeValue){
   sexeCount <- content(request, "text", encoding = "UTF-8")
   result <- fromJSON(sexeCount)
 
+  return(result)
+}
+
+getTotalReceipt <- function(medValue){
+  paramsJson = paste('{"filters" : {"totalReceipt": ["',medValue,'"]}}', sep = "")
+  headers = c('Content-Type' = 'application/json; charset=UTF-8')
+  request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
+  getTotalReceiptJson <- content(request, "text", encoding = "UTF-8")
+  result <- fromJSON(getTotalReceiptJson)
+  print(result)
   return(result)
 }
 #result$sumPacient, result$sumLIQ, result$sumRec
@@ -201,6 +212,36 @@ plotPyramide <- function(){
     
   return(p)
 }
+
+roundUpNice <- function(x, nice=c(1,2,4,5,6,8,10)) {
+    if(length(x) != 1) stop("'x' must be of length 1")
+    10^floor(log10(x)) * nice[[which(x <= 10^floor(log10(x)) * nice)[[1]]]]
+}
+
+plotRecep <- function(drugCode){ 
+    
+  totalReceiptValues <- getTotalReceipt(drugCode)
+
+  total <- data.frame()
+
+  for(i in 1:nrow(totalReceiptValues)){
+      value <- data.frame(Mes= totalReceiptValues[i,1], Total=totalReceiptValues[i,2])
+      total <-rbind(total, value)
+  }
+
+  maxValue <- max(total$Total)
+  partialValue <- roundUpNice(maxValue/10)
+
+  p <- ggplot(total, aes(x = Mes, y = Total, fill = Mes)) + 
+  geom_bar(data = subset(total), stat = "identity") + 
+  scale_y_continuous(
+                      breaks=seq(0,maxValue,partialValue),
+                      #breaks = c(min(total$Total), 0, max(df$x),
+                      labels=abs(seq(0,maxValue,partialValue))
+                    )
+    
+  return(p)
+}
 getTotalOfArrayList <- function(listNumeric) {
   total = 0
   for (element in listNumeric) {
@@ -326,9 +367,9 @@ getAvgAge <-function()
   return(list)
 }
 
-getMedicament <-function()
+getMedicament <-function(drugCode)
 {
-  paramsJson = paste('{"filters" : {"Codi_Medicament": ["946582"]}}')
+  paramsJson = paste('{"filters" : {"Codi_Medicament": ["',drugCode,'"]}}', sep = "")
   headers = c('Content-Type' = 'application/json; charset=UTF-8')
   request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
   medJson <- content(request, "text", encoding = "UTF-8")
@@ -344,6 +385,7 @@ getMedicament <-function()
 # Menu
 sidebar <- dashboardSidebar(
     sidebarMenu(
+        tags$head(tags$style(HTML('.content-wrapper { height: 1500px !important;}'))),
         menuItem("Menu Principal", tabName = "resum", icon = icon("dashboard")),
         menuItem("MAPA ABS", tabName = "incidencia", icon = icon("map")),
         menuItem("Pirámide de població", tabName = "populationpyramid", icon = icon("info"))
@@ -377,15 +419,25 @@ body <- dashboardBody(
                     box(
                         title = "Taula de medicaments",
                         status = "info",
-                          textInput("caption", "Codi Medicament"),
-                          verbatimTextOutput("value"),
-                          tableOutput("obs")
-                    ) ,
+                        textInput("caption", "Codi Medicament"),
+                        tableOutput("obs"),
+                        style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
+                        
+                    ),
                     box(
                         title = "Gràfica de la distribució",
                         status = "info",
-                        plotOutput(outputId = "distribution_plot", height = 500)
-                    )                 
+                        plotOutput(outputId = "distribution_plot", height = 500),
+                        style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
+                    ),
+                    box(
+                        title = "Nº de receptes",
+                        status = "info",
+                        width =12,
+                        #plotOutput(outputId = "recep_plot", height = 500)
+                        plotlyOutput(outputId = "recep_plot", height = 500)
+                    )          
+                            
             ),
             tabItem(tabName = "incidencia",
                 leafletOutput("plot_abs")
@@ -476,7 +528,7 @@ server <- function(input, output, session) {
         plotPyramide()
     })
     # Meds Table
-    listmeds <- getMedicament()
+    listmeds <- getMedicament("946582")
     setValues <- list(listmeds[1], listmeds[2], listmeds[3], listmeds[4], listmeds[5], listmeds[6], listmeds[7], listmeds[8], listmeds[9]
         , listmeds[10], listmeds[11], listmeds[12], listmeds[13], listmeds[14], listmeds[15], listmeds[16], listmeds[17],listmeds[18],listmeds[19])
     values <- matrix(setValues, ncol = 1)
@@ -486,6 +538,32 @@ server <- function(input, output, session) {
                           "Numero_DDD_calculat", "Unitats_DDD"
                           )
     output$obs <- renderTable({values}, rownames = TRUE)
+
+    #output$recep_plot <- renderPlot({
+    #plotRecep()
+    #})
+
+    output$recep_plot <- renderPlotly({
+    plotRecep("946582")
+    })
+
+    v <- observeEvent(req(input$caption),{ 
+    
+    listmeds <- getMedicament(input$caption)
+    setValues <- list(listmeds[1], listmeds[2], listmeds[3], listmeds[4], listmeds[5], listmeds[6], listmeds[7], listmeds[8], listmeds[9]
+                      , listmeds[10], listmeds[11], listmeds[12], listmeds[13], listmeds[14], listmeds[15], listmeds[16], listmeds[17],listmeds[18],listmeds[19])
+    values <- matrix(setValues, ncol = 1)
+    colnames(values) <- "Medicament"
+    rownames(values) <- c("Codi Medicament", "Nom Medicament", "PVP", "GT", "Any", "Codi_ATC5", "Nom_ATC5", "Codi_ATC7", "Nom_ATC7",
+                          "Numero_Principi_Actiu(PA)", "Codi_PA", "Nom_PA", "Quantitat_PA", "Unitats", "DDD", "DDD_msc", "Numero_DDD_msc",
+                          "Numero_DDD_calculat", "Unitats_DDD"
+    )
+    output$obs <- renderTable({values}, rownames = TRUE)
+
+    output$recep_plot <- renderPlotly({
+      plotRecep(input$caption)
+    })
+  })
     
 }
 

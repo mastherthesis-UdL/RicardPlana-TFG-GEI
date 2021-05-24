@@ -60,7 +60,7 @@ RUN wget --no-verbose https://download3.rstudio.org/ubuntu-14.04/x86_64/VERSION 
     gdebi -n ss-latest.deb && \
     rm -f version.txt ss-latest.deb && \
     . /etc/environment && \
-    R -e "install.packages(c('shiny', 'rmarkdown', 'shinydashboard', 'leaflet', 'RColorBrewer','jsonlite', 'DT', 'geojsonio','ggplot2', 'reshape2', 'plyr', 'tidyverse', 'ggpol', 'RColorBrewer', 'httr', 'htmltools', 'rjson', 'rgdal'))" && \
+    R -e "install.packages(c('shiny', 'rmarkdown', 'shinydashboard', 'leaflet', 'RColorBrewer','jsonlite', 'DT', 'geojsonio','ggplot2', 'reshape2', 'plyr', 'tidyverse', 'ggpol', 'RColorBrewer', 'httr', 'htmltools', 'rjson', 'rgdal', 'plotly'))" && \
     cp -R /usr/local/lib/R/site-library/shiny/examples/* /srv/shiny-server/ && \
     chown shiny:shiny /var/lib/shiny-server
 
