@@ -24,6 +24,41 @@ logging.basicConfig(filename=log_name,
 
 logger = logging.getLogger(log_name)
 
+dictionary_abs_comarca = {
+	'TÀRREG': 'Urgell',
+	'ABS CERDANYA': 'Cerdanya',
+	'ABS LLEIDA RURAL SUD': 'Segrià',
+	'PONTS': 'Noguera',
+	'ABS LA GRANADELLA': 'Segrià',
+	'ABS ARAN': "Val d'Aran",
+	'LA POBLA DE SEGUR': 'Pallars Jussà',
+	'AGRAMUNT': 'Urgell',
+	'PALLARS SOBIRÀ': 'Pallars Sobirà',
+	'CAPPONT': 'Segrià',
+	'EIXAMPLE': 'Segrià',
+	'BELLPUIG': 'Urgell',
+	"LA SEU D'URGELL": 'Alt Urgell',
+	'SERÒS': 'Segrià',
+	'ARTESA DE SEGRE': 'Noguera',
+	"PLA D'URGELL": "Pla d'Urgell",
+	'TÀRREGA': 'Urgell',
+	'ALFARRÀS/ALMENAR': 'Segrià',
+	'RONDA': 'Segrià',
+	'BALAFIA': 'Segrià',
+	'ALTA RIBAGORÇA': 'Alta Ribagorça',
+	'BALAGUER': 'Noguera',
+	'CERVERA': 'Segarra',
+	'ALT URGELL-SUD': 'Alt Urgell',
+	'ALCARRÀS': 'Segrià',
+	'CS FERRAN': 'Segrià',
+	'CENTRE SANTA MARIA': 'Segrià',
+	'TREMP': 'Pallars Jussà',
+	'ABS ALMACELLES': 'Segrià',
+	'BORDETA': 'Segrià',
+	'LLEIDA RURAL NORD': 'Segrià',
+	'ABS BORGES BLANQUES': 'Garrigues',
+	'':''
+}
 
 def insert_registers(args):
     year = int(args[1].split("/")[-1].split("_")[-1].split(".")[0])
@@ -123,7 +158,8 @@ def add_treatments(line, year):
                       FIELDS[2]: {FIELDS[18]: line[9]},
                       FIELDS[19]: year,
                       FIELDS[22]: parsed_treatmens[4],
-                      FIELDS[23]: parsed_treatmens[5]
+                      FIELDS[23]: parsed_treatmens[5],
+                      FIELDS[24]: parsed_treatmens[6]
                       })
 
 
@@ -166,6 +202,11 @@ def parse_treatment(line):
         newline.append("")
     try:
         newline.append(line[0][-2:])
+    except ValueError as e:
+        logger.info(e.details)
+        newline.append("")
+    try:
+        newline.append(dictionary_abs_comarca[line[19][1:-2]])
     except ValueError as e:
         logger.info(e.details)
         newline.append("")

@@ -166,6 +166,22 @@ const repository = (db) => {
       })
     }
 
+    if ( options.filters.countByComarca !== undefined){
+
+      return new Promise((resolve, reject) => {
+        tractaments.aggregate(
+          [{$match: {
+            "Medicament.Codi_Medicament": options.filters.countByComarca[0]
+          }}, {$group: {
+            _id: "$Codi_Comarca",
+            count:{$sum:1}
+          }}]
+        ).then(_matrix => {
+          resolve(_matrix)
+        })
+      })
+    }
+
     if ( options.filters.avgAge !== undefined){
        
       return new Promise((resolve, reject) => {
