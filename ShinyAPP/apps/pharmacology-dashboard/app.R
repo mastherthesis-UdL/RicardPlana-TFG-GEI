@@ -15,6 +15,10 @@ library(httr)
 library(htmltools)
 library(rgdal)
 library(plotly)
+library(shinyjs)
+#library(rjson)
+library(xlsx)
+library(raster)
 
 # Funció per imprimer una piràmide poblacional 
 # @df = dataframe amb tres columnes Edat,Valor i Sexe
@@ -232,16 +236,40 @@ plotRecep <- function(drugCode){
   maxValue <- max(total$Total)
   partialValue <- roundUpNice(maxValue/10)
 
-  p <- ggplot(total, aes(x = Mes, y = Total, fill = Mes)) + 
-  geom_bar(data = subset(total), stat = "identity") + 
+  p <- ggplot(total, aes(x = Mes, y = Total)) + 
+  geom_bar(data = subset(total), stat = "identity", fill = "#48B799") + 
   scale_y_continuous(
                       breaks=seq(0,maxValue,partialValue),
                       #breaks = c(min(total$Total), 0, max(df$x),
                       labels=abs(seq(0,maxValue,partialValue))
                     )
-    
+  
+
   return(p)
 }
+
+plotLineRecep <- function(drugCode){ 
+    
+  totalReceiptValues <- getTotalReceipt(drugCode)
+
+  total <- data.frame()
+
+  for(i in 1:nrow(totalReceiptValues)){
+      value <- data.frame(Mes= totalReceiptValues[i,1], Total=totalReceiptValues[i,2])
+      total <-rbind(total, value)
+  }
+
+  maxValue <- max(total$Total)
+  partialValue <- roundUpNice(maxValue/10)
+
+  #p <- ggplot(total, aes(x = Mes, y = Total, fill = Mes)) + 
+  p <- ggplot(total, aes(x = Mes, y = Total,  group = 1)) + 
+  geom_line()+
+  geom_point()
+
+  return(p)
+}
+
 getTotalOfArrayList <- function(listNumeric) {
   total = 0
   for (element in listNumeric) {
@@ -250,87 +278,27 @@ getTotalOfArrayList <- function(listNumeric) {
   return(total)
 }
 
-# Funció per obtenir tots el tipus de cancer que analitzarem
-cancerTypes <- function(){
-    v <- factor(c("Pulmó", "Mama", "Còlon", "Recte", "Pròstata","Bufeta","Mieloma", "Estómac","Endometri","Pell","Ossos"))
-    return(v)
-}
-
-# Funció per mostrar el mapa
-printMap <- function(geojson, feat, output, incident) {
-    
-    geojson$features <- lapply(geojson$features, function(feat) {
-        i = feat$properties[incident]
-        state_popup <- paste(i)
-        feat$properties$style <- list(
-            #fillColor = getColor(i)
-        )
-        feat
-    })
-    
-    
-    output$map <- renderLeaflet({
-        leaflet() %>% addGeoJSON(geojson) %>% 
-            addLegend("bottomright", 
-                      colors =c("#BD0026",  "#E31A1C", "#FC4E2A", "#FD8D3C", "#FEB24C", "#FED976", "#FFEDA0"),
-                      labels= c("100%", "75% - 100%","50% - 75%","25% - 50%","10% - 25%", "5% - 10%", "0% - 5%"),
-                      title= "% de incidencia",
-                      opacity = 1) %>% 
-            setView(lat = 41.9505 , lng = 0.8677, zoom = 8)
-    })
-}
-
 
 # Funció per fer un degradat de colors al mapa utilitzant la variable incidencia
-getColor <- function(incidencia) {
-    if (is.null(incidencia)) return("#FFFFFF")
-    else {
-      if (incidencia >= 100) return ("#BD0026")
-      else if (incidencia > 75) return ("#E31A1C")
-      else if (incidencia > 50) return ("#FC4E2A")
-      else if (incidencia > 25) return ("#FD8D3C")
-      else if (incidencia > 10) return ("#FEB24C")
-      else if (incidencia > 5) return ("#FED976")
-      else return ("#FFEDA0")      
+getColor <- function(nom, list_comarques_consum, list_comarques_poblacio) {
+  out <- tryCatch(
+    {
+      result = 0
+      poblacio = list_comarques_poblacio[[nom]]
+      consum = list_comarques_consum[[nom]]
+      result = consum/poblacio*10000
+      if (result >= 0 && result < 50) {return('#FEF9EA')}
+      else if (result >= 50 && result < 100) {return('#FFEDA0')}
+      else if (result >= 100 && result < 150) {return('#FEB24C')}
+      else if (result >= 150 && result < 200) {return('#FC4E2A')}
+      return("#BD0026")
+    },
+    error=function(cond) {
+      return("#FEF9EA")
     }
-
+  )
 }
 
-
-
-printTable <- function(output, valueRb){
-  print(valueRb)
-  output$distribucio_taula <- renderDataTable({
-    df_distribucio_taula = read.csv('dones-rural-2012.csv',sep=';')
-    if(valueRb == "dr12") df_distribucio_taula = read.csv('dones-rural-2012.csv',sep=';')
-    else if(valueRb == "du12") df_distribucio_taula = read.csv('dones-urba-2012.csv',sep=';')
-    else if(valueRb == "hr12") df_distribucio_taula = read.csv('homes-rural-2012.csv',sep=';')
-    else if(valueRb == "hu12") df_distribucio_taula = read.csv('homes-urba-2012.csv',sep=';')
-    else if(valueRb == "dr13") df_distribucio_taula = read.csv('dones-rural-2013.csv',sep=';')
-    else if(valueRb == "du13") df_distribucio_taula = read.csv('dones-urba-2013.csv',sep=';')
-    else if(valueRb == "hr13") df_distribucio_taula = read.csv('homes-rural-2013.csv',sep=';')
-    else if(valueRb == "hu13") df_distribucio_taula = read.csv('homes-urba-2013.csv',sep=';')
-    else if(valueRb == "dr14") df_distribucio_taula = read.csv('dones-rural-2014.csv',sep=';')
-    else if(valueRb == "du14") df_distribucio_taula = read.csv('dones-urba-2014.csv',sep=';')
-    else if(valueRb == "hr14") df_distribucio_taula = read.csv('homes-rural-2014.csv',sep=';')
-    else if(valueRb == "hu14") df_distribucio_taula = read.csv('homes-urba-2014.csv',sep=';')
-    totals <- htmltools::withTags(table(
-      tableHeader(df_distribucio_taula),
-      #tableFooter(sapply(df_incidencia_provincia_lleida_homes, function(x) if(is.numeric(x)) sum(x)))
-    ))
-    
-    DT::datatable(df_distribucio_taula,
-                  container=totals,
-                  #caption = tags$caption("Example"), 
-                  rownames = F, options = list(autoWidth = T, 
-                                               paging=F,
-                                               scrollCollapse = T,
-                                               dom = 'lftp')
-    )
-    
-  })
-  
-}
 
 getTotalPatients <- function(sexeValue){
 
@@ -382,14 +350,38 @@ getMedicament <-function(drugCode)
   return(list)
 }
 
+getMapInformation <- function(codi_medicament) {
+  paramsJson = paste('{"filters" : {"countByComarca": ["',codi_medicament,'"]}}', sep = "")
+  headers = c('Content-Type' = 'application/json; charset=UTF-8')
+  request <- httr::POST(url='http://192.168.101.98:3000/tractaments', httr::add_headers(.headers=headers), body=paramsJson)
+  
+  comarcaCount <- content(request, "text", encoding = "UTF-8")
+  result <- fromJSON(comarcaCount)
+
+  return(result)
+}
+
+comarques_habitants <- function(list_comarques_poblacio) {
+  list_comarques_poblacio['Alt urgell'] <- 20428
+  list_comarques_poblacio['Alta Ribagorça'] <- 3859
+  list_comarques_poblacio['Garrigues'] <- 19121
+  list_comarques_poblacio['Urgell'] <- 35821
+  list_comarques_poblacio['Segrià'] <- 204603
+  list_comarques_poblacio["Pla d'Urgell"] <- 36751
+  list_comarques_poblacio["Val d'aran"] <- 9776
+  list_comarques_poblacio['Segarra'] <- 22532
+  list_comarques_poblacio['Pallars Sobirà'] <- 6908
+  list_comarques_poblacio['Pallars Jussà'] <- 13182
+  list_comarques_poblacio['Noguera'] <- 38472
+  return(list_comarques_poblacio)
+}
+
 # Menu
 sidebar <- dashboardSidebar(
     sidebarMenu(
-        tags$head(tags$style(HTML('.content-wrapper { height: 1500px !important;}'))),
+        tags$head(tags$style(HTML('.content-wrapper { height: 1800px !important;}'))),
         menuItem("Menu Principal", tabName = "resum", icon = icon("dashboard")),
-        menuItem("MAPA ABS", tabName = "incidencia", icon = icon("map")),
-        menuItem("Pirámide de població", tabName = "populationpyramid", icon = icon("info"))
-        #menuItem("Taxes i correlacions", icon = icon("th"), tabName = "distribucions")
+        menuItem("Mapa GeoJson", tabName = "mapa", icon = icon("map"))
     )
 )
 
@@ -431,36 +423,26 @@ body <- dashboardBody(
                         style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
                     ),
                     box(
-                        title = "Nº de receptes",
+                        title = "BarPlot Nº Receptes",
                         status = "info",
                         width =12,
                         #plotOutput(outputId = "recep_plot", height = 500)
                         plotlyOutput(outputId = "recep_plot", height = 500)
-                    )          
+                    ),  
+                    box(
+                        title = "LinePlot Nº Receptes",
+                        status = "info",
+                        width =12,
+                        #plotOutput(outputId = "recep_plot", height = 500)
+                        plotlyOutput(outputId = "recepLine_plot", height = 500)
+                    ) 
                             
             ),
-            tabItem(tabName = "incidencia",
-                leafletOutput("plot_abs")
-            ),
-        tabItem(tabName = "distribucions",
-            h2("Distribucions totals del càncer"),
-            column(width = 12,
-            ),
-            # box( title = "Taula de distribució", status = "primary", height =
-            #          "100%",width = "12",solidHeader = T,
-            #      column(width = 12,
-            #             DT::dataTableOutput("distribucio_taula"),style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
-            #      )
-            # ),
-            # 
-            # box( title = "Taula de distribució", status = "primary", height =
-            #        "595",width = "6",solidHeader = T,
-            #      column(width = 12,
-            #             DT::dataTableOutput("distribucio_taula"),style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
-            #     )
-            # ),
-             
-        )
+            tabItem(tabName = "mapa",
+                h2("Mapa ABS-GeoJson"),
+                textInput("medComarca", "Codi Medicament"), 
+                leafletOutput("map")           
+            )
     )
 )
 
@@ -475,54 +457,64 @@ ui <- dashboardPage(
       
 server <- function(input, output, session) {    
     #
-    abs <- readOGR("/srv/shiny-server/maps/ABS_2018.shp",
-                layer = "ABS_2018", GDAL1_integer64_policy = TRUE, use_iconv=TRUE, encoding="UTF-8")
-
-    output$plot_abs <- renderLeaflet({
-        leaflet(abs) %>%
-        setView(lng = 1.3984735784516196, lat = 42.091848475624886, zoom = 8) %>%
-        addTiles() %>%
-        #addProviderTiles(providers$Esri.WorldTopoMap) %>%
-        addPolygons(color = "#FF0000", weight = 1, smoothFactor = 0.5,
-                    opacity = 1.0, fillOpacity = 0.5,
-                    #fillColor = ~colorQuantile("YlOrRd", NA.)(NA.),
-                    highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                        bringToFront = TRUE))
-    })
-
-    #TODO: Permetre carregar el mapa de comarca o municipi en funcio de la selecció de l'usuari
-    
-
-    output$txt <- renderText({
-        paste("You choose", input$rb)
-    })
-
-    output$list <- renderText({
-        paste("You choose", input$cancerList)
-    })
     
     ########### Secció Inicial - Dashboard
-     
-    # Observem tots els events en incidencies, en cas que un usuari faci una selecció repintem el mapa.
-    v <- observeEvent(req(input$rb,input$cancerList),{ 
-        
-        if(input$rb =="Homes"){
-            sexe <- 'Homes'}
-        if(input$rb =="Dones"){
-            sexe <- 'Dones'}
-        
-        for(i in cancers){
-            if(input$cancerList == i){
-                cancer <- i
-            }
-        }
-        
-        print(cancer)
-        print(sexe)
-        incident <- paste("incident", cancer, sexe, sep="")
-        printMap(geojson, feat, output, incident)
-    })
-    
+    ##MAPA
+    #Inicialitza les llistes de consum i de poblacio total per comarca
+  list_comarques_consum <- vector(mode="list", length=11)
+  names(list_comarques_consum) <- c('Urgell', 'Segrià', "Pla d'Urgell", "Val d'aran", "Segarra",
+                                    "Pallars Sobirà", "Pallars Jussà", "Noguera", "Alt urgell",
+                                    "Garrigues", "Alta Ribagorça")
+  
+  list_comarques_poblacio <- vector(mode="list", length=11)
+  names(list_comarques_poblacio) <- c('Urgell', 'Segrià', "Pla d'Urgell", "Val d'aran", "Segarra",
+                                      "Pallars Sobirà", "Pallars Jussà", "Noguera", "Alt urgell",
+                                      "Garrigues", "Alta Ribagorça")
+  
+  result <- getMapInformation("663680") #Aqui va el codi medicament que l'usuari seleccioni
+  
+  # Parsejar el resultat de la peticio i ho afegeix a la llista de consum.
+  for(i in 1:nrow(result)) {       # for-loop over rows
+    comarca <- result[i, 1]
+    value <- result[i, 2]
+    list_comarques_consum[comarca] <- value
+  }
+  
+  # Crear la llista de poblacio per comarca amb les dades
+  list_comarques_poblacio <- comarques_habitants(list_comarques_poblacio)
+  
+  
+  geojson <- readLines("../maps/lleida.geojson", warn = FALSE) %>%
+    paste(collapse = "\n") %>%
+    fromJSON(simplifyVector = FALSE)
+  
+  # Default styles for all features
+  geojson$style = list(
+    weight = 1,
+    color = "#555555",
+    opacity = 1,
+    fillOpacity = 0.8
+  )
+  
+  geojson$features <- lapply(geojson$features, function(feat) {
+    feat$properties$style <- list(
+        fillColor = getColor(feat$properties$nom_comar, list_comarques_consum, list_comarques_poblacio)
+      )
+    feat
+  })
+
+  output$map <- renderLeaflet({
+    leaflet() %>% addGeoJSON(geojson) %>%
+      addLegend("bottomright",
+                colors =c("#BD0026", "#FC4E2A",  "#FEB24C",  "#FFEDA0", "#FEF9EA"),
+                labels= c("+200", "200 - 150","150 - 100", "100 - 50", "0 - 50"),
+                title= "Punts de prescripció",
+                opacity = 1) %>%
+      setView(lat = 41.9505 , lng = 0.8677, zoom = 7)
+  })
+
+  
+
     # Piramide d'Edat
     output$distribution_plot <- renderPlot({
         plotPyramide()
@@ -539,31 +531,82 @@ server <- function(input, output, session) {
                           )
     output$obs <- renderTable({values}, rownames = TRUE)
 
-    #output$recep_plot <- renderPlot({
-    #plotRecep()
-    #})
-
+    #Plotli nº receptes
     output$recep_plot <- renderPlotly({
     plotRecep("946582")
     })
 
+    output$recepLine_plot <- renderPlotly({
+    plotLineRecep("946582")
+    })
+    #Observe Taula medicaments + plotly
     v <- observeEvent(req(input$caption),{ 
     
-    listmeds <- getMedicament(input$caption)
-    setValues <- list(listmeds[1], listmeds[2], listmeds[3], listmeds[4], listmeds[5], listmeds[6], listmeds[7], listmeds[8], listmeds[9]
-                      , listmeds[10], listmeds[11], listmeds[12], listmeds[13], listmeds[14], listmeds[15], listmeds[16], listmeds[17],listmeds[18],listmeds[19])
-    values <- matrix(setValues, ncol = 1)
-    colnames(values) <- "Medicament"
-    rownames(values) <- c("Codi Medicament", "Nom Medicament", "PVP", "GT", "Any", "Codi_ATC5", "Nom_ATC5", "Codi_ATC7", "Nom_ATC7",
-                          "Numero_Principi_Actiu(PA)", "Codi_PA", "Nom_PA", "Quantitat_PA", "Unitats", "DDD", "DDD_msc", "Numero_DDD_msc",
-                          "Numero_DDD_calculat", "Unitats_DDD"
-    )
-    output$obs <- renderTable({values}, rownames = TRUE)
+      listmeds <- getMedicament(input$caption)
+      setValues <- list(listmeds[1], listmeds[2], listmeds[3], listmeds[4], listmeds[5], listmeds[6], listmeds[7], listmeds[8], listmeds[9]
+                        , listmeds[10], listmeds[11], listmeds[12], listmeds[13], listmeds[14], listmeds[15], listmeds[16], listmeds[17],listmeds[18],listmeds[19])
+      values <- matrix(setValues, ncol = 1)
+      colnames(values) <- "Medicament"
+      rownames(values) <- c("Codi Medicament", "Nom Medicament", "PVP", "GT", "Any", "Codi_ATC5", "Nom_ATC5", "Codi_ATC7", "Nom_ATC7",
+                            "Numero_Principi_Actiu(PA)", "Codi_PA", "Nom_PA", "Quantitat_PA", "Unitats", "DDD", "DDD_msc", "Numero_DDD_msc",
+                            "Numero_DDD_calculat", "Unitats_DDD"
+      )
+      output$obs <- renderTable({values}, rownames = TRUE)
 
-    output$recep_plot <- renderPlotly({
-      plotRecep(input$caption)
+      output$recep_plot <- renderPlotly({
+        plotRecep(input$caption)
+      })
+
+      output$recepLine_plot <- renderPlotly({
+        plotLineRecep(input$caption)
+      })     
     })
-  })
+    #Observe map comarca
+    v <- observeEvent(req(input$medComarca),{ 
+      result <- getMapInformation(input$medComarca) #Aqui va el codi medicament que l'usuari seleccioni
+  
+      # Parsejar el resultat de la peticio i ho afegeix a la llista de consum.
+      for(i in 1:nrow(result)) {       # for-loop over rows
+        comarca <- result[i, 1]
+        value <- result[i, 2]
+        list_comarques_consum[comarca] <- value
+      }
+      
+      # Crear la llista de poblacio per comarca amb les dades
+      list_comarques_poblacio <- comarques_habitants(list_comarques_poblacio)
+      
+      
+      geojson <- readLines("../maps/lleida.geojson", warn = FALSE) %>%
+        paste(collapse = "\n") %>%
+        fromJSON(simplifyVector = FALSE)
+      
+      # Default styles for all features
+      geojson$style = list(
+        weight = 1,
+        color = "#555555",
+        opacity = 1,
+        fillOpacity = 0.8
+      )
+      
+      geojson$features <- lapply(geojson$features, function(feat) {
+        feat$properties$style <- list(
+            fillColor = getColor(feat$properties$nom_comar, list_comarques_consum, list_comarques_poblacio)
+          )
+        feat
+      })
+
+      output$map <- renderLeaflet({
+          leaflet() %>% addGeoJSON(geojson) %>%
+            addLegend("bottomright",
+                      colors =c("#BD0026", "#FC4E2A",  "#FEB24C",  "#FFEDA0", "#FEF9EA"),
+                      labels= c("+200", "200 - 150","150 - 100", "100 - 50", "0 - 50"),
+                      title= "Punts de prescripció",
+                      opacity = 1) %>%
+            setView(lat = 41.9505 , lng = 0.8677, zoom = 7)
+        })
+    })
+
+
     
 }
 
