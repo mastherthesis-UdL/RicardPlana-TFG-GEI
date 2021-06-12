@@ -379,7 +379,7 @@ comarques_habitants <- function(list_comarques_poblacio) {
 # Menu
 sidebar <- dashboardSidebar(
     sidebarMenu(
-        tags$head(tags$style(HTML('.content-wrapper { height: 1800px !important;}'))),
+        tags$head(tags$style(HTML('.content-wrapper { height: 2250px !important;}'))),
         menuItem("Menu Principal", tabName = "resum", icon = icon("dashboard")),
         menuItem("Mapa GeoJson", tabName = "mapa", icon = icon("map"))
     )
@@ -411,16 +411,17 @@ body <- dashboardBody(
                     box(
                         title = "Taula de medicaments",
                         status = "info",
-                        textInput("caption", "Codi Medicament"),
+                        textInput("caption", "Codi Medicament",),
                         tableOutput("obs"),
-                        style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
-                        
+                        style = "height:520px; overflow-y: scroll"
+                        #style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
+                         
                     ),
                     box(
                         title = "Gràfica de la distribució",
                         status = "info",
                         plotOutput(outputId = "distribution_plot", height = 500),
-                        style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
+                        #style = "height:500px; overflow-y: scroll;overflow-x: scroll;"
                     ),
                     box(
                         title = "BarPlot Nº Receptes",
