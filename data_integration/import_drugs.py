@@ -52,53 +52,58 @@ def check_file(_args):
 
 def convert_line(_line):
     new_line = []
-
+    # Codi_ATC5
     new_line.append(_line[0][1:-1])
+    # Nom_ATC5
     new_line.append(_line[1][1:-1])
+    # Codi_ATC7
     new_line.append(_line[2][1:-1])
+    # Nom_ATC7
     new_line.append(_line[3][1:-1])
+    # Numero_Principi_Actiu(PA)
     try:
         new_line.append(int(float(_line[4])))
     except ValueError as e:
         new_line.append(int(0))
-
+    # Codi_PA
     new_line.append(_line[5][1:-1])
+    # Nom_PA
     new_line.append(_line[6][1:-1])
-
+    # Quantitat_PA
     try:
         new_line.append(int(float(_line[9].replace(",", "."))))
     except ValueError as e:
         new_line.append(int(0))
-
+    # Unitats
     try:
         new_line.append(int(float(_line[10].replace(",", "."))))
     except ValueError as e:
         new_line.append(int(0))
-
+    # DDD
     try:
         new_line.append(int(float(_line[11].replace(",", "."))))
     except ValueError as e:
         new_line.append(int(0))
-
+    # DDD_msc
     try:
         new_line.append(int(float(_line[12].replace(",", "."))))
     except ValueError as e:
         new_line.append(int(0))
-
+    # Numero_DDD_msc
     try:
         new_line.append(int(float(_line[13].replace(",", "."))))
     except ValueError as e:
         new_line.append(int(0))
-
+    # Numero_DDD_calculat
     try:
         new_line.append((int(float(_line[14].replace(",", ".")))))
     except ValueError as e:
         new_line.append(int(0))
-
+    # Unitats_DDD
     new_line.append(_line[15].replace("\n",""))
+    # Codi_Medicament
     new_line.append(_line[7].split(",")[0])
-    #print(new_line)
-    #print(new_line)
+
     return new_line
 
 if __name__ == '__main__':
